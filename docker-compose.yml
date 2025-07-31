@@ -10,6 +10,10 @@ services:
     restart: unless-stopped
     expose:
       - "3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.claude-relay.rule=Host(`my.cceverything.com`)"
+      - "traefik.http.services.claude-relay.loadbalancer.server.port=3000"
     environment:
       # 🌐 服务器配置
       - NODE_ENV=production
