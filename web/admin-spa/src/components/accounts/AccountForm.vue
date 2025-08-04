@@ -2,50 +2,50 @@
   <Teleport to="body">
     <div
       v-if="show"
-      class="fixed inset-0 modal z-50 flex items-center justify-center p-4"
+      class="fixed inset-0 modal z-50 flex items-center justify-center p-3 sm:p-4"
     >
-      <div class="modal-content w-full max-w-2xl p-8 mx-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div class="flex items-center justify-between mb-6">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-              <i class="fas fa-user-circle text-white" />
+      <div class="modal-content w-full max-w-2xl p-4 sm:p-6 md:p-8 mx-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div class="flex items-center justify-between mb-4 sm:mb-6">
+          <div class="flex items-center gap-2 sm:gap-3">
+            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg sm:rounded-xl flex items-center justify-center">
+              <i class="fas fa-user-circle text-white text-sm sm:text-base" />
             </div>
-            <h3 class="text-xl font-bold text-gray-900">
+            <h3 class="text-lg sm:text-xl font-bold text-gray-900">
               {{ isEdit ? '编辑账户' : '添加账户' }}
             </h3>
           </div>
           <button 
-            class="text-gray-400 hover:text-gray-600 transition-colors"
+            class="text-gray-400 hover:text-gray-600 transition-colors p-1"
             @click="$emit('close')"
           >
-            <i class="fas fa-times text-xl" />
+            <i class="fas fa-times text-lg sm:text-xl" />
           </button>
         </div>
         
         <!-- 步骤指示器 -->
         <div
           v-if="!isEdit && form.addType === 'oauth'"
-          class="flex items-center justify-center mb-8"
+          class="flex items-center justify-center mb-4 sm:mb-8"
         >
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-2 sm:space-x-4">
             <div class="flex items-center">
               <div
-                :class="['w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold', 
+                :class="['w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold', 
                          oauthStep >= 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500']"
               >
                 1
               </div>
-              <span class="ml-2 text-sm font-medium text-gray-700">基本信息</span>
+              <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm font-medium text-gray-700">基本信息</span>
             </div>
-            <div class="w-8 h-0.5 bg-gray-300" />
+            <div class="w-4 sm:w-8 h-0.5 bg-gray-300" />
             <div class="flex items-center">
               <div
-                :class="['w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold', 
+                :class="['w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold', 
                          oauthStep >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500']"
               >
                 2
               </div>
-              <span class="ml-2 text-sm font-medium text-gray-700">授权认证</span>
+              <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm font-medium text-gray-700">授权认证</span>
             </div>
           </div>
         </div>
@@ -159,10 +159,48 @@
                   >
                   <span class="text-sm text-gray-700">专属账户</span>
                 </label>
+                <label class="flex items-center cursor-pointer">
+                  <input 
+                    v-model="form.accountType" 
+                    type="radio" 
+                    value="group" 
+                    class="mr-2"
+                  >
+                  <span class="text-sm text-gray-700">分组调度</span>
+                </label>
               </div>
               <p class="text-xs text-gray-500 mt-2">
-                共享账户：供所有API Key使用；专属账户：仅供特定API Key使用
+                共享账户：供所有API Key使用；专属账户：仅供特定API Key使用；分组调度：加入分组供分组内调度
               </p>
+            </div>
+            
+            <!-- 分组选择器 -->
+            <div v-if="form.accountType === 'group'">
+              <label class="block text-sm font-semibold text-gray-700 mb-3">选择分组 *</label>
+              <div class="flex gap-2">
+                <select 
+                  v-model="form.groupId" 
+                  class="form-input flex-1"
+                  required
+                >
+                  <option value="">请选择分组</option>
+                  <option 
+                    v-for="group in filteredGroups" 
+                    :key="group.id" 
+                    :value="group.id"
+                  >
+                    {{ group.name }} ({{ group.memberCount || 0 }} 个成员)
+                  </option>
+                  <option value="__new__">+ 新建分组</option>
+                </select>
+                <button
+                  type="button"
+                  class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  @click="refreshGroups"
+                >
+                  <i class="fas fa-sync-alt" :class="{ 'animate-spin': loadingGroups }" />
+                </button>
+              </div>
             </div>
             
             <!-- Gemini 项目编号字段 -->
@@ -250,92 +288,36 @@
               </div>
               
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">模型映射表 (可选)</label>
-                <div class="bg-blue-50 p-3 rounded-lg mb-3">
-                  <p class="text-xs text-blue-700">
-                    <i class="fas fa-info-circle mr-1" />
-                    留空表示支持所有模型且不修改请求。配置映射后，左侧模型会被识别为支持的模型，右侧是实际发送的模型。
-                  </p>
-                </div>
-                
-                <!-- 模型映射表 -->
-                <div class="space-y-2 mb-3">
-                  <div
-                    v-for="(mapping, index) in modelMappings"
-                    :key="index"
-                    class="flex items-center gap-2"
-                  >
-                    <input
-                      v-model="mapping.from"
-                      type="text"
-                      class="form-input flex-1"
-                      placeholder="原始模型名称"
-                    >
-                    <i class="fas fa-arrow-right text-gray-400" />
-                    <input
-                      v-model="mapping.to"
-                      type="text"
-                      class="form-input flex-1"
-                      placeholder="映射后的模型名称"
-                    >
-                    <button
-                      type="button"
-                      class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      @click="removeModelMapping(index)"
-                    >
-                      <i class="fas fa-trash" />
-                    </button>
-                  </div>
-                </div>
-                
-                <!-- 添加映射按钮 -->
-                <button
-                  type="button"
-                  class="w-full px-4 py-2 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-gray-400 hover:text-gray-700 transition-colors"
-                  @click="addModelMapping"
-                >
-                  <i class="fas fa-plus mr-2" />
-                  添加模型映射
-                </button>
-                
-                <!-- 快捷添加按钮 -->
-                <div class="mt-3 flex flex-wrap gap-2">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">支持的模型 (可选)--注意,ClaudeCode必须加上hiku模型！</label>
+                <div class="mb-2 flex gap-2">
                   <button
                     type="button"
                     class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-                    @click="addPresetMapping('claude-3-5-sonnet-20241022', 'claude-3-5-sonnet-20241022')"
+                    @click="addPresetModel('claude-sonnet-4-20250514')"
                   >
-                    + Sonnet 3.5
+                    + claude-sonnet-4-20250514
                   </button>
                   <button
                     type="button"
                     class="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
-                    @click="addPresetMapping('claude-3-opus-20240229', 'claude-3-opus-20240229')"
+                    @click="addPresetModel('claude-opus-4-20250514')"
                   >
-                    + Opus 3
+                    + claude-opus-4-20250514
                   </button>
                   <button
                     type="button"
-                    class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
-                    @click="addPresetMapping('claude-3-5-haiku-20241022', 'claude-3-5-haiku-20241022')"
+                    class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-purple-200 transition-colors"
+                    @click="addPresetModel('claude-3-5-haiku-20241022')"
                   >
-                    + Haiku 3.5
-                  </button>
-                  <button
-                    type="button"
-                    class="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors"
-                    @click="addPresetMapping('claude-sonnet-4-20250514', 'claude-3-5-sonnet-20241022')"
-                  >
-                    + Sonnet 4 → 3.5
-                  </button>
-                  <button
-                    type="button"
-                    class="px-3 py-1 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-                    @click="addPresetMapping('claude-opus-4-20250514', 'claude-3-opus-20240229')"
-                  >
-                    + Opus 4 → 3
+                    + claude-3-5-haiku-20241022
                   </button>
                 </div>
+                <textarea 
+                  v-model="form.supportedModels" 
+                  rows="3" 
+                  class="form-input w-full resize-none"
+                  placeholder="每行一个模型，留空表示支持所有模型。特别注意,ClaudeCode必须加上hiku模型！"
+                />
                 <p class="text-xs text-gray-500 mt-1">
                   留空表示支持所有模型。如果指定模型，请求中的模型不在列表内将不会调度到此账号
                 </p>
@@ -555,10 +537,48 @@
                 >
                 <span class="text-sm text-gray-700">专属账户</span>
               </label>
+              <label class="flex items-center cursor-pointer">
+                <input 
+                  v-model="form.accountType" 
+                  type="radio" 
+                  value="group" 
+                  class="mr-2"
+                >
+                <span class="text-sm text-gray-700">分组调度</span>
+              </label>
             </div>
             <p class="text-xs text-gray-500 mt-2">
-              共享账户：供所有API Key使用；专属账户：仅供特定API Key使用
+              共享账户：供所有API Key使用；专属账户：仅供特定API Key使用；分组调度：加入分组供分组内调度
             </p>
+          </div>
+          
+          <!-- 分组选择器 -->
+          <div v-if="form.accountType === 'group'">
+            <label class="block text-sm font-semibold text-gray-700 mb-3">选择分组 *</label>
+            <div class="flex gap-2">
+              <select 
+                v-model="form.groupId" 
+                class="form-input flex-1"
+                required
+              >
+                <option value="">请选择分组</option>
+                <option 
+                  v-for="group in filteredGroups" 
+                  :key="group.id" 
+                  :value="group.id"
+                >
+                  {{ group.name }} ({{ group.memberCount || 0 }} 个成员)
+                </option>
+                <option value="__new__">+ 新建分组</option>
+              </select>
+              <button
+                type="button"
+                class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                @click="refreshGroups"
+              >
+                <i class="fas fa-sync-alt" :class="{ 'animate-spin': loadingGroups }" />
+              </button>
+            </div>
           </div>
           
           <!-- Gemini 项目编号字段 -->
@@ -621,92 +641,36 @@
             </div>
             
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">模型映射表 (可选)</label>
-              <div class="bg-blue-50 p-3 rounded-lg mb-3">
-                <p class="text-xs text-blue-700">
-                  <i class="fas fa-info-circle mr-1" />
-                  留空表示支持所有模型且不修改请求。配置映射后，左侧模型会被识别为支持的模型，右侧是实际发送的模型。
-                </p>
-              </div>
-              
-              <!-- 模型映射表 -->
-              <div class="space-y-2 mb-3">
-                <div
-                  v-for="(mapping, index) in modelMappings"
-                  :key="index"
-                  class="flex items-center gap-2"
-                >
-                  <input
-                    v-model="mapping.from"
-                    type="text"
-                    class="form-input flex-1"
-                    placeholder="原始模型名称"
-                  >
-                  <i class="fas fa-arrow-right text-gray-400" />
-                  <input
-                    v-model="mapping.to"
-                    type="text"
-                    class="form-input flex-1"
-                    placeholder="映射后的模型名称"
-                  >
-                  <button
-                    type="button"
-                    class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    @click="removeModelMapping(index)"
-                  >
-                    <i class="fas fa-trash" />
-                  </button>
-                </div>
-              </div>
-              
-              <!-- 添加映射按钮 -->
-              <button
-                type="button"
-                class="w-full px-4 py-2 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-gray-400 hover:text-gray-700 transition-colors"
-                @click="addModelMapping"
-              >
-                <i class="fas fa-plus mr-2" />
-                添加模型映射
-              </button>
-              
-              <!-- 快捷添加按钮 -->
-              <div class="mt-3 flex flex-wrap gap-2">
+              <label class="block text-sm font-semibold text-gray-700 mb-3">支持的模型 (可选)</label>
+              <div class="mb-2 flex gap-2">
                 <button
                   type="button"
                   class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-                  @click="addPresetMapping('claude-3-5-sonnet-20241022', 'claude-3-5-sonnet-20241022')"
+                  @click="addPresetModel('claude-sonnet-4-20250514')"
                 >
-                  + Sonnet 3.5
+                  + claude-sonnet-4-20250514
                 </button>
                 <button
                   type="button"
                   class="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
-                  @click="addPresetMapping('claude-3-opus-20240229', 'claude-3-opus-20240229')"
+                  @click="addPresetModel('claude-opus-4-20250514')"
                 >
-                  + Opus 3
+                  + claude-opus-4-20250514
                 </button>
                 <button
                   type="button"
-                  class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
-                  @click="addPresetMapping('claude-3-5-haiku-20241022', 'claude-3-5-haiku-20241022')"
+                  class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-purple-200 transition-colors"
+                  @click="addPresetModel('claude-3-5-haiku-20241022')"
                 >
-                  + Haiku 3.5
-                </button>
-                <button
-                  type="button"
-                  class="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors"
-                  @click="addPresetMapping('claude-sonnet-4-20250514', 'claude-3-5-sonnet-20241022')"
-                >
-                  + Sonnet 4 → 3.5
-                </button>
-                <button
-                  type="button"
-                  class="px-3 py-1 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-                  @click="addPresetMapping('claude-opus-4-20250514', 'claude-3-opus-20240229')"
-                >
-                  + Opus 4 → 3
+                  + claude-3-5-haiku-20241022
                 </button>
               </div>
+              <textarea 
+                v-model="form.supportedModels" 
+                rows="3" 
+                class="form-input w-full resize-none"
+                placeholder="每行一个模型，留空表示支持所有模型。特别注意,ClaudeCode必须加上hiku模型！"
+              />
             </div>
             
             <div>
@@ -813,17 +777,26 @@
       @confirm="handleConfirm"
       @cancel="handleCancel"
     />
+    
+    <!-- 分组管理模态框 -->
+    <GroupManagementModal
+      v-if="showGroupManagement"
+      @close="showGroupManagement = false"
+      @refresh="handleGroupRefresh"
+    />
   </Teleport>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { showToast } from '@/utils/toast'
+import { apiClient } from '@/config/api'
 import { useAccountsStore } from '@/stores/accounts'
 import { useConfirm } from '@/composables/useConfirm'
 import ProxyConfig from './ProxyConfig.vue'
 import OAuthFlow from './OAuthFlow.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import GroupManagementModal from './GroupManagementModal.vue'
 
 const props = defineProps({
   account: {
@@ -874,6 +847,7 @@ const form = ref({
   name: props.account?.name || '',
   description: props.account?.description || '',
   accountType: props.account?.accountType || 'shared',
+  groupId: '',
   projectId: props.account?.projectId || '',
   accessToken: '',
   refreshToken: '',
@@ -882,31 +856,10 @@ const form = ref({
   apiUrl: props.account?.apiUrl || '',
   apiKey: props.account?.apiKey || '',
   priority: props.account?.priority || 50,
+  supportedModels: props.account?.supportedModels?.join('\n') || '',
   userAgent: props.account?.userAgent || '',
   rateLimitDuration: props.account?.rateLimitDuration || 60
 })
-
-// 模型映射表数据
-const modelMappings = ref([])
-
-// 初始化模型映射表
-const initModelMappings = () => {
-  if (props.account?.supportedModels) {
-    // 如果是对象格式（新的映射表）
-    if (typeof props.account.supportedModels === 'object' && !Array.isArray(props.account.supportedModels)) {
-      modelMappings.value = Object.entries(props.account.supportedModels).map(([from, to]) => ({
-        from,
-        to
-      }))
-    } else if (Array.isArray(props.account.supportedModels)) {
-      // 如果是数组格式（旧格式），转换为映射表
-      modelMappings.value = props.account.supportedModels.map(model => ({
-        from: model,
-        to: model
-      }))
-    }
-  }
-}
 
 // 表单验证错误
 const errors = ref({
@@ -941,6 +894,12 @@ const nextStep = async () => {
     return
   }
   
+  // 分组类型验证
+  if (form.value.accountType === 'group' && (!form.value.groupId || form.value.groupId.trim() === '')) {
+    showToast('请选择一个分组', 'error')
+    return
+  }
+  
   // 对于Gemini账户，检查项目编号
   if (form.value.platform === 'gemini' && oauthStep.value === 1 && form.value.addType === 'oauth') {
     if (!form.value.projectId || form.value.projectId.trim() === '') {
@@ -968,6 +927,7 @@ const handleOAuthSuccess = async (tokenInfo) => {
       name: form.value.name,
       description: form.value.description,
       accountType: form.value.accountType,
+      groupId: form.value.accountType === 'group' ? form.value.groupId : undefined,
       proxy: form.value.proxy.enabled ? {
         type: form.value.proxy.type,
         host: form.value.proxy.host,
@@ -1034,6 +994,12 @@ const createAccount = async () => {
     hasError = true
   }
   
+  // 分组类型验证
+  if (form.value.accountType === 'group' && (!form.value.groupId || form.value.groupId.trim() === '')) {
+    showToast('请选择一个分组', 'error')
+    hasError = true
+  }
+  
   if (hasError) {
     return
   }
@@ -1044,6 +1010,7 @@ const createAccount = async () => {
       name: form.value.name,
       description: form.value.description,
       accountType: form.value.accountType,
+      groupId: form.value.accountType === 'group' ? form.value.groupId : undefined,
       proxy: form.value.proxy.enabled ? {
         type: form.value.proxy.type,
         host: form.value.proxy.host,
@@ -1088,7 +1055,9 @@ const createAccount = async () => {
       data.apiUrl = form.value.apiUrl
       data.apiKey = form.value.apiKey
       data.priority = form.value.priority || 50
-      data.supportedModels = convertMappingsToObject() || {}
+      data.supportedModels = form.value.supportedModels
+        ? form.value.supportedModels.split('\n').filter(m => m.trim())
+        : []
       data.userAgent = form.value.userAgent || null
       data.rateLimitDuration = form.value.rateLimitDuration || 60
     }
@@ -1121,6 +1090,12 @@ const updateAccount = async () => {
     return
   }
   
+  // 分组类型验证
+  if (form.value.accountType === 'group' && (!form.value.groupId || form.value.groupId.trim() === '')) {
+    showToast('请选择一个分组', 'error')
+    return
+  }
+  
   // 对于Gemini账户，检查项目编号
   if (form.value.platform === 'gemini') {
     if (!form.value.projectId || form.value.projectId.trim() === '') {
@@ -1143,6 +1118,7 @@ const updateAccount = async () => {
       name: form.value.name,
       description: form.value.description,
       accountType: form.value.accountType,
+      groupId: form.value.accountType === 'group' ? form.value.groupId : undefined,
       proxy: form.value.proxy.enabled ? {
         type: form.value.proxy.type,
         host: form.value.proxy.host,
@@ -1198,7 +1174,9 @@ const updateAccount = async () => {
         data.apiKey = form.value.apiKey
       }
       data.priority = form.value.priority || 50
-      data.supportedModels = convertMappingsToObject() || {}
+      data.supportedModels = form.value.supportedModels
+        ? form.value.supportedModels.split('\n').filter(m => m.trim())
+        : []
       data.userAgent = form.value.userAgent || null
       data.rateLimitDuration = form.value.rateLimitDuration || 60
     }
@@ -1247,51 +1225,95 @@ watch(() => form.value.apiKey, () => {
   }
 })
 
+// 分组相关数据
+const groups = ref([])
+const loadingGroups = ref(false)
+const showGroupManagement = ref(false)
+
+// 根据平台筛选分组
+const filteredGroups = computed(() => {
+  const platformFilter = form.value.platform === 'claude-console' ? 'claude' : form.value.platform
+  return groups.value.filter(g => g.platform === platformFilter)
+})
+
+// 加载分组列表
+const loadGroups = async () => {
+  loadingGroups.value = true
+  try {
+    const response = await apiClient.get('/admin/account-groups')
+    groups.value = response.data || []
+  } catch (error) {
+    showToast('加载分组列表失败', 'error')
+    groups.value = []
+  } finally {
+    loadingGroups.value = false
+  }
+}
+
+// 刷新分组列表
+const refreshGroups = async () => {
+  await loadGroups()
+  showToast('分组列表已刷新', 'success')
+}
+
+// 处理分组管理模态框刷新
+const handleGroupRefresh = async () => {
+  await loadGroups()
+}
+
 // 监听平台变化，重置表单
 watch(() => form.value.platform, (newPlatform) => {
   if (newPlatform === 'claude-console') {
     form.value.addType = 'manual' // Claude Console 只支持手动模式
   }
+  
+  // 平台变化时，清空分组选择
+  if (form.value.accountType === 'group') {
+    form.value.groupId = ''
+  }
 })
 
-// 添加模型映射
-const addModelMapping = () => {
-  modelMappings.value.push({ from: '', to: '' })
-}
+// 监听账户类型变化
+watch(() => form.value.accountType, (newType) => {
+  if (newType === 'group') {
+    // 如果选择分组类型，加载分组列表
+    if (groups.value.length === 0) {
+      loadGroups()
+    }
+  }
+})
 
-// 移除模型映射
-const removeModelMapping = (index) => {
-  modelMappings.value.splice(index, 1)
-}
+// 监听分组选择
+watch(() => form.value.groupId, (newGroupId) => {
+  if (newGroupId === '__new__') {
+    // 触发创建新分组
+    form.value.groupId = ''
+    showGroupManagement.value = true
+  }
+})
 
-// 添加预设映射
-const addPresetMapping = (from, to) => {
-  // 检查是否已存在相同的映射
-  const exists = modelMappings.value.some(mapping => mapping.from === from)
-  if (exists) {
-    showToast(`模型 ${from} 的映射已存在`, 'info')
+// 添加预设模型
+const addPresetModel = (modelName) => {
+  // 获取当前模型列表
+  const currentModels = form.value.supportedModels
+    ? form.value.supportedModels.split('\n').filter(m => m.trim())
+    : []
+  
+  // 检查是否已存在
+  if (currentModels.includes(modelName)) {
+    showToast(`模型 ${modelName} 已存在`, 'info')
     return
   }
   
-  modelMappings.value.push({ from, to })
-  showToast(`已添加映射: ${from} → ${to}`, 'success')
-}
-
-// 将模型映射表转换为对象格式
-const convertMappingsToObject = () => {
-  const mapping = {}
-  modelMappings.value.forEach(item => {
-    if (item.from && item.to) {
-      mapping[item.from] = item.to
-    }
-  })
-  return Object.keys(mapping).length > 0 ? mapping : null
+  // 添加到列表
+  currentModels.push(modelName)
+  form.value.supportedModels = currentModels.join('\n')
+  showToast(`已添加模型 ${modelName}`, 'success')
 }
 
 // 监听账户变化，更新表单
 watch(() => props.account, (newAccount) => {
   if (newAccount) {
-    initModelMappings()
     // 重新初始化代理配置
     const proxyConfig = newAccount.proxy && newAccount.proxy.host && newAccount.proxy.port
       ? {
@@ -1317,6 +1339,7 @@ watch(() => props.account, (newAccount) => {
       name: newAccount.name,
       description: newAccount.description || '',
       accountType: newAccount.accountType || 'shared',
+      groupId: '',
       projectId: newAccount.projectId || '',
       accessToken: '',
       refreshToken: '',
@@ -1325,12 +1348,26 @@ watch(() => props.account, (newAccount) => {
       apiUrl: newAccount.apiUrl || '',
       apiKey: '',  // 编辑模式不显示现有的 API Key
       priority: newAccount.priority || 50,
+      supportedModels: newAccount.supportedModels?.join('\n') || '',
       userAgent: newAccount.userAgent || '',
       rateLimitDuration: newAccount.rateLimitDuration || 60
     }
+    
+    // 如果是分组类型，加载分组ID
+    if (newAccount.accountType === 'group') {
+      // 先加载分组列表
+      loadGroups().then(() => {
+        // 查找账户所属的分组
+        groups.value.forEach(group => {
+          apiClient.get(`/admin/account-groups/${group.id}/members`).then(response => {
+            const members = response.data || []
+            if (members.some(m => m.id === newAccount.id)) {
+              form.value.groupId = group.id
+            }
+          }).catch(() => {})
+        })
+      })
+    }
   }
 }, { immediate: true })
-
-// 初始化时调用
-initModelMappings()
 </script>
