@@ -269,7 +269,17 @@ module.exports = {
 }
 ```
 
-### 第四步：启动服务
+### 第四步：安装前端依赖并构建
+
+```bash
+# 安装前端依赖
+npm run install:web
+
+# 构建前端（生成 dist 目录）
+npm run build:web
+```
+
+### 第五步：启动服务
 
 ```bash
 # 初始化
@@ -526,10 +536,14 @@ git add package-lock.json
 # 3. 安装新的依赖（如果有）
 npm install
 
-# 4. 重启服务
+# 4. 安装并构建前端
+npm run install:web
+npm run build:web
+
+# 5. 重启服务
 npm run service:restart:daemon
 
-# 5. 检查服务状态
+# 6. 检查服务状态
 npm run service:status
 ```
 

@@ -458,6 +458,10 @@ EOF
     print_info "安装Web界面依赖..."
     npm run install:web
     
+    # 构建前端
+    print_info "构建前端界面..."
+    npm run build:web
+    
     # 创建systemd服务文件（Linux）
     if [[ "$OS" == "debian" || "$OS" == "redhat" || "$OS" == "arch" ]]; then
         create_systemd_service
@@ -546,6 +550,10 @@ update_service() {
     print_info "更新依赖..."
     npm install
     npm run install:web
+    
+    # 构建前端
+    print_info "构建前端界面..."
+    npm run build:web
     
     # 启动服务
     start_service

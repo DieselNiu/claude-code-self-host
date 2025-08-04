@@ -185,14 +185,23 @@
                       <i class="fas fa-key text-white text-xs" />
                     </div>
                     <div class="min-w-0">
-                      <div class="text-sm font-semibold text-gray-900 truncate" :title="key.name">
+                      <div 
+                        class="text-sm font-semibold text-gray-900 truncate"
+                        :title="key.name"
+                      >
                         {{ key.name }}
                       </div>
-                      <div class="text-xs text-gray-500 truncate" :title="key.id">
+                      <div 
+                        class="text-xs text-gray-500 truncate"
+                        :title="key.id"
+                      >
                         {{ key.id }}
                       </div>
                       <div class="text-xs text-gray-500 mt-1 truncate">
-                        <span v-if="key.claudeAccountId" :title="`绑定: ${getBoundAccountName(key.claudeAccountId)}`">
+                        <span 
+                          v-if="key.claudeAccountId"
+                          :title="`绑定: ${getBoundAccountName(key.claudeAccountId)}`"
+                        >
                           <i class="fas fa-link mr-1" />
                           {{ getBoundAccountName(key.claudeAccountId) }}
                         </span>
@@ -232,98 +241,100 @@
                   </span>
                 </td>
                 <td class="px-3 py-4">
-                  <div class="space-y-1">
-                    <!-- 请求统计 -->
-                    <div class="flex justify-between text-sm">
-                      <span class="text-gray-600">请求数:</span>
-                      <span class="font-medium text-gray-900">{{ formatNumber((key.usage && key.usage.total && key.usage.total.requests) || 0) }}</span>
-                    </div>
-                    <!-- Token统计 -->
-                    <div class="flex justify-between text-sm">
-                      <span class="text-gray-600">Token:</span>
-                      <span class="font-medium text-gray-900">{{ formatNumber((key.usage && key.usage.total && key.usage.total.tokens) || 0) }}</span>
-                    </div>
-                    <!-- 费用统计 -->
-                    <div class="flex justify-between text-sm">
-                      <span class="text-gray-600">费用:</span>
-                      <span class="font-medium text-green-600">{{ calculateApiKeyCost(key.usage) }}</span>
-                    </div>
-                    <!-- 每日费用限制 -->
-                    <div
-                      v-if="key.dailyCostLimit > 0"
-                      class="flex justify-between text-sm"
-                    >
-                      <span class="text-gray-600">今日费用:</span>
-                      <span :class="['font-medium', (key.dailyCost || 0) >= key.dailyCostLimit ? 'text-red-600' : 'text-blue-600']">
-                        ${{ (key.dailyCost || 0).toFixed(2) }} / ${{ key.dailyCostLimit.toFixed(2) }}
-                      </span>
-                    </div>
-                    <!-- 并发限制 -->
-                    <div class="flex justify-between text-sm">
-                      <span class="text-gray-600">并发限制:</span>
-                      <span class="font-medium text-purple-600">{{ key.concurrencyLimit > 0 ? key.concurrencyLimit : '无限制' }}</span>
-                    </div>
-                    <!-- 当前并发数 -->
-                    <div class="flex justify-between text-sm">
-                      <span class="text-gray-600">当前并发:</span>
-                      <span :class="['font-medium', key.currentConcurrency > 0 ? 'text-orange-600' : 'text-gray-600']">
-                        {{ key.currentConcurrency || 0 }}
-                        <span
-                          v-if="key.concurrencyLimit > 0"
-                          class="text-xs text-gray-500"
-                        >/ {{ key.concurrencyLimit }}</span>
-                      </span>
-                    </div>
-                    <!-- 时间窗口限流 -->
-                    <div
-                      v-if="key.rateLimitWindow > 0"
-                      class="flex justify-between text-sm"
-                    >
-                      <span class="text-gray-600">时间窗口:</span>
-                      <span class="font-medium text-indigo-600">{{ key.rateLimitWindow }} 分钟</span>
-                    </div>
-                    <!-- 请求次数限制 -->
-                    <div
-                      v-if="key.rateLimitRequests > 0"
-                      class="flex justify-between text-sm"
-                    >
-                      <span class="text-gray-600">请求限制:</span>
-                      <span class="font-medium text-indigo-600">{{ key.rateLimitRequests }} 次/窗口</span>
-                    </div>
-                    <!-- 输入/输出Token -->
-                    <div class="flex justify-between text-xs text-gray-500">
-                      <span>输入: {{ formatNumber((key.usage && key.usage.total && key.usage.total.inputTokens) || 0) }}</span>
-                      <span>输出: {{ formatNumber((key.usage && key.usage.total && key.usage.total.outputTokens) || 0) }}</span>
-                    </div>
-                    <!-- 缓存Token细节 -->
-                    <div
-                      v-if="((key.usage && key.usage.total && key.usage.total.cacheCreateTokens) || 0) > 0 || ((key.usage && key.usage.total && key.usage.total.cacheReadTokens) || 0) > 0"
-                      class="flex justify-between text-xs text-orange-500"
-                    >
-                      <span>缓存创建: {{ formatNumber((key.usage && key.usage.total && key.usage.total.cacheCreateTokens) || 0) }}</span>
-                      <span>缓存读取: {{ formatNumber((key.usage && key.usage.total && key.usage.total.cacheReadTokens) || 0) }}</span>
-                    </div>
-                    <!-- RPM/TPM -->
-                    <div class="flex justify-between text-xs text-blue-600">
-                      <span>RPM: {{ (key.usage && key.usage.averages && key.usage.averages.rpm) || 0 }}</span>
-                      <span>TPM: {{ (key.usage && key.usage.averages && key.usage.averages.tpm) || 0 }}</span>
-                    </div>
-                    <!-- 今日统计 -->
-                    <div class="pt-1 border-t border-gray-100">
-                      <div class="flex justify-between text-xs text-green-600">
-                        <span>今日: {{ formatNumber((key.usage && key.usage.daily && key.usage.daily.requests) || 0) }}次</span>
-                        <span>{{ formatNumber((key.usage && key.usage.daily && key.usage.daily.tokens) || 0) }}T</span>
+                  <div class="space-y-2">
+                    <!-- 今日使用统计 -->
+                    <div class="mb-2">
+                      <div class="flex justify-between items-center text-sm mb-1">
+                        <span class="text-gray-600">今日请求</span>
+                        <span class="font-semibold text-gray-900">{{ formatNumber((key.usage?.daily?.requests) || 0) }}次</span>
+                      </div>
+                      <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-600">今日费用</span>
+                        <span class="font-semibold text-green-600">${{ (key.dailyCost || 0).toFixed(4) }}</span>
                       </div>
                     </div>
-                    <!-- 模型分布按钮 -->
-                    <div class="pt-2">
-                      <button
-                        v-if="key && key.id"
-                        class="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
-                        @click="toggleApiKeyModelStats(key.id)"
+                    
+                    <!-- 每日费用限制进度条 -->
+                    <div 
+                      v-if="key.dailyCostLimit > 0" 
+                      class="space-y-1"
+                    >
+                      <div class="flex justify-between items-center text-xs">
+                        <span class="text-gray-500">费用限额</span>
+                        <span class="text-gray-700">
+                          ${{ (key.dailyCost || 0).toFixed(2) }} / ${{ key.dailyCostLimit.toFixed(2) }}
+                        </span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-1.5">
+                        <div 
+                          :class="getDailyCostProgressColor(key)"
+                          class="h-1.5 rounded-full transition-all duration-300"
+                          :style="{ width: getDailyCostProgress(key) + '%' }"
+                        />
+                      </div>
+                    </div>
+                    
+                    <!-- 时间窗口限制进度条 -->
+                    <div 
+                      v-if="key.rateLimitWindow > 0" 
+                      class="space-y-1"
+                    >
+                      <div class="flex justify-between items-center text-xs">
+                        <span class="text-gray-500">窗口限制</span>
+                        <span class="text-gray-700">
+                          {{ key.rateLimitWindow }}分钟
+                        </span>
+                      </div>
+                      
+                      <!-- 请求次数限制 -->
+                      <div 
+                        v-if="key.rateLimitRequests > 0" 
+                        class="space-y-0.5"
                       >
-                        <i :class="['fas', expandedApiKeys[key.id] ? 'fa-chevron-up' : 'fa-chevron-down', 'mr-1']" />
-                        模型使用分布
+                        <div class="flex justify-between items-center text-xs">
+                          <span class="text-gray-400">请求</span>
+                          <span class="text-gray-600">
+                            {{ key.currentWindowRequests || 0 }}/{{ key.rateLimitRequests }}
+                          </span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-1">
+                          <div 
+                            :class="getWindowRequestProgressColor(key)"
+                            class="h-1 rounded-full transition-all duration-300"
+                            :style="{ width: getWindowRequestProgress(key) + '%' }"
+                          />
+                        </div>
+                      </div>
+                      
+                      <!-- Token使用量限制 -->
+                      <div 
+                        v-if="key.tokenLimit > 0" 
+                        class="space-y-0.5"
+                      >
+                        <div class="flex justify-between items-center text-xs">
+                          <span class="text-gray-400">Token</span>
+                          <span class="text-gray-600">
+                            {{ formatTokenCount(key.currentWindowTokens || 0) }}/{{ formatTokenCount(key.tokenLimit) }}
+                          </span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-1">
+                          <div 
+                            :class="getWindowTokenProgressColor(key)"
+                            class="h-1 rounded-full transition-all duration-300"
+                            :style="{ width: getWindowTokenProgress(key) + '%' }"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- 查看详情按钮 -->
+                    <div class="pt-1">
+                      <button
+                        class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 w-full justify-center py-1 hover:bg-blue-50 rounded transition-colors"
+                        @click="showUsageDetails(key)"
+                      >
+                        <i class="fas fa-chart-line" />
+                        查看详细统计
                       </button>
                     </div>
                   </div>
@@ -373,6 +384,15 @@
                 </td>
                 <td class="px-3 py-4 whitespace-nowrap text-sm">
                   <div class="flex gap-1">
+                    <button
+                      v-if="key && key.id"
+                      class="text-indigo-600 hover:text-indigo-900 font-medium hover:bg-indigo-50 px-2 py-1 rounded transition-colors text-xs"
+                      title="模型使用分布"
+                      @click="toggleApiKeyModelStats(key.id)"
+                    >
+                      <i :class="['fas', expandedApiKeys[key.id] ? 'fa-chevron-up' : 'fa-chevron-down']" />
+                      <span class="hidden xl:inline ml-1">模型</span>
+                    </button>
                     <button 
                       class="text-purple-600 hover:text-purple-900 font-medium hover:bg-purple-50 px-2 py-1 rounded transition-colors text-xs" 
                       title="复制统计页面链接"
@@ -472,10 +492,10 @@
                             :default-time="defaultTime"
                             size="small"
                             style="width: 280px;"
-                            @update:model-value="(value) => onApiKeyCustomDateRangeChange(key.id, value)"
                             class="api-key-date-picker"
                             :clearable="true"
                             :unlink-panels="false"
+                            @update:model-value="(value) => onApiKeyCustomDateRangeChange(key.id, value)"
                           />
                         </div>
                       </div>
@@ -526,7 +546,7 @@
                               <i class="fas fa-coins text-yellow-500 mr-1 text-xs" />
                               总Token:
                             </span>
-                            <span class="font-semibold text-gray-900">{{ formatNumber(stat.allTokens) }}</span>
+                            <span class="font-semibold text-gray-900">{{ formatTokenCount(stat.allTokens) }}</span>
                           </div>
                           <div class="flex justify-between items-center text-sm">
                             <span class="text-gray-600 flex items-center">
@@ -541,14 +561,14 @@
                                 <i class="fas fa-arrow-down text-green-500 mr-1" />
                                 输入:
                               </span>
-                              <span class="font-medium">{{ formatNumber(stat.inputTokens) }}</span>
+                              <span class="font-medium">{{ formatTokenCount(stat.inputTokens) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-xs text-gray-500">
                               <span class="flex items-center">
                                 <i class="fas fa-arrow-up text-blue-500 mr-1" />
                                 输出:
                               </span>
-                              <span class="font-medium">{{ formatNumber(stat.outputTokens) }}</span>
+                              <span class="font-medium">{{ formatTokenCount(stat.outputTokens) }}</span>
                             </div>
                             <div
                               v-if="stat.cacheCreateTokens > 0"
@@ -558,7 +578,7 @@
                                 <i class="fas fa-save mr-1" />
                                 缓存创建:
                               </span>
-                              <span class="font-medium">{{ formatNumber(stat.cacheCreateTokens) }}</span>
+                              <span class="font-medium">{{ formatTokenCount(stat.cacheCreateTokens) }}</span>
                             </div>
                             <div
                               v-if="stat.cacheReadTokens > 0"
@@ -568,7 +588,7 @@
                                 <i class="fas fa-download mr-1" />
                                 缓存读取:
                               </span>
-                              <span class="font-medium">{{ formatNumber(stat.cacheReadTokens) }}</span>
+                              <span class="font-medium">{{ formatTokenCount(stat.cacheReadTokens) }}</span>
                             </div>
                           </div>
                         </div>
@@ -603,7 +623,7 @@
                             总请求: <span class="font-semibold text-gray-800">{{ apiKeyModelStats[key.id].reduce((sum, stat) => sum + stat.requests, 0) }}</span>
                           </span>
                           <span class="text-gray-600">
-                            总Token: <span class="font-semibold text-gray-800">{{ formatNumber(apiKeyModelStats[key.id].reduce((sum, stat) => sum + stat.allTokens, 0)) }}</span>
+                            总Token: <span class="font-semibold text-gray-800">{{ formatTokenCount(apiKeyModelStats[key.id].reduce((sum, stat) => sum + stat.allTokens, 0)) }}</span>
                           </span>
                         </div>
                       </div>
@@ -666,25 +686,104 @@
           </div>
           
           <!-- 统计信息 -->
-          <div class="grid grid-cols-2 gap-3 mb-3">
-            <div>
-              <p class="text-xs text-gray-500">
-                使用量
-              </p>
-              <p class="text-sm font-semibold text-gray-900">
-                {{ formatNumber((key.usage && key.usage.total && key.usage.total.requests) || 0) }} 次
-              </p>
-              <p class="text-xs text-gray-500 mt-0.5">
-                {{ formatNumber((key.usage && key.usage.total && key.usage.total.tokens) || 0) }} tokens
-              </p>
+          <div class="space-y-2 mb-3">
+            <!-- 今日使用 -->
+            <div class="bg-gray-50 rounded-lg p-3">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs text-gray-600">今日使用</span>
+                <button
+                  class="text-xs text-blue-600 hover:text-blue-800"
+                  @click="showUsageDetails(key)"
+                >
+                  <i class="fas fa-chart-line mr-1" />详情
+                </button>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">
+                    {{ formatNumber((key.usage?.daily?.requests) || 0) }} 次
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    请求
+                  </p>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-green-600">
+                    ${{ (key.dailyCost || 0).toFixed(4) }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    费用
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p class="text-xs text-gray-500">
-                费用
-              </p>
-              <p class="text-sm font-semibold text-green-600">
-                {{ calculateApiKeyCost(key.usage) }}
-              </p>
+            
+            <!-- 限制进度 -->
+            <div
+              v-if="key.dailyCostLimit > 0"
+              class="space-y-1"
+            >
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-500">每日费用限额</span>
+                <span class="text-gray-700">
+                  ${{ (key.dailyCost || 0).toFixed(2) }} / ${{ key.dailyCostLimit.toFixed(2) }}
+                </span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  :class="getDailyCostProgressColor(key)"
+                  class="h-2 rounded-full transition-all duration-300"
+                  :style="{ width: getDailyCostProgress(key) + '%' }"
+                />
+              </div>
+            </div>
+            
+            <!-- 移动端时间窗口限制 -->
+            <div
+              v-if="key.rateLimitWindow > 0 && (key.rateLimitRequests > 0 || key.tokenLimit > 0)"
+              class="space-y-1"
+            >
+              <div class="text-xs text-gray-500 mb-1">
+                窗口限制 ({{ key.rateLimitWindow }}分钟)
+              </div>
+              
+              <div 
+                v-if="key.rateLimitRequests > 0" 
+                class="flex items-center gap-2"
+              >
+                <span class="text-xs text-gray-500 w-10">请求</span>
+                <div class="flex-1">
+                  <div class="w-full bg-gray-200 rounded-full h-1.5">
+                    <div 
+                      :class="getWindowRequestProgressColor(key)"
+                      class="h-1.5 rounded-full transition-all duration-300"
+                      :style="{ width: getWindowRequestProgress(key) + '%' }"
+                    />
+                  </div>
+                </div>
+                <span class="text-xs text-gray-600 w-16 text-right">
+                  {{ key.currentWindowRequests || 0 }}/{{ key.rateLimitRequests }}
+                </span>
+              </div>
+              
+              <div 
+                v-if="key.tokenLimit > 0" 
+                class="flex items-center gap-2"
+              >
+                <span class="text-xs text-gray-500 w-10">Token</span>
+                <div class="flex-1">
+                  <div class="w-full bg-gray-200 rounded-full h-1.5">
+                    <div 
+                      :class="getWindowTokenProgressColor(key)"
+                      class="h-1.5 rounded-full transition-all duration-300"
+                      :style="{ width: getWindowTokenProgress(key) + '%' }"
+                    />
+                  </div>
+                </div>
+                <span class="text-xs text-gray-600 w-16 text-right">
+                  {{ formatTokenCount(key.currentWindowTokens || 0) }}/{{ formatTokenCount(key.tokenLimit) }}
+                </span>
+              </div>
             </div>
           </div>
           
@@ -720,10 +819,10 @@
           <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
             <button 
               class="flex-1 px-3 py-2 text-xs text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
-              @click="toggleExpanded(key.id)"
+              @click="showUsageDetails(key)"
             >
-              <i :class="['fas', expandedKeys.includes(key.id) ? 'fa-chevron-up' : 'fa-chevron-down']" />
-              {{ expandedKeys.includes(key.id) ? '收起' : '详情' }}
+              <i class="fas fa-chart-line" />
+              查看详情
             </button>
             <button 
               class="flex-1 px-3 py-2 text-xs text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -746,77 +845,6 @@
             >
               <i class="fas fa-trash" />
             </button>
-          </div>
-          
-          <!-- 展开的详细统计 -->
-          <div
-            v-if="expandedKeys.includes(key.id)"
-            class="mt-3 pt-3 border-t border-gray-100"
-          >
-            <h5 class="text-xs font-semibold text-gray-700 mb-2">
-              详细信息
-            </h5>
-            
-            <!-- 更多统计数据 -->
-            <div class="space-y-2 text-xs">
-              <div class="flex justify-between">
-                <span class="text-gray-600">并发限制:</span>
-                <span class="font-medium text-purple-600">{{ key.concurrencyLimit > 0 ? key.concurrencyLimit : '无限制' }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">当前并发:</span>
-                <span :class="['font-medium', key.currentConcurrency > 0 ? 'text-orange-600' : 'text-gray-600']">
-                  {{ key.currentConcurrency || 0 }}
-                  <span v-if="key.concurrencyLimit > 0" class="text-xs text-gray-500">/ {{ key.concurrencyLimit }}</span>
-                </span>
-              </div>
-              <div v-if="key.dailyCostLimit > 0" class="flex justify-between">
-                <span class="text-gray-600">今日费用:</span>
-                <span :class="['font-medium', (key.dailyCost || 0) >= key.dailyCostLimit ? 'text-red-600' : 'text-blue-600']">
-                  ${{ (key.dailyCost || 0).toFixed(2) }} / ${{ key.dailyCostLimit.toFixed(2) }}
-                </span>
-              </div>
-              <div v-if="key.rateLimitWindow > 0" class="flex justify-between">
-                <span class="text-gray-600">时间窗口:</span>
-                <span class="font-medium text-indigo-600">{{ key.rateLimitWindow }} 分钟</span>
-              </div>
-              <div v-if="key.rateLimitRequests > 0" class="flex justify-between">
-                <span class="text-gray-600">请求限制:</span>
-                <span class="font-medium text-indigo-600">{{ key.rateLimitRequests }} 次/窗口</span>
-              </div>
-              
-              <!-- Token 细节 -->
-              <div class="pt-2 mt-2 border-t border-gray-100">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">输入 Token:</span>
-                  <span class="font-medium">{{ formatNumber((key.usage && key.usage.total && key.usage.total.inputTokens) || 0) }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">输出 Token:</span>
-                  <span class="font-medium">{{ formatNumber((key.usage && key.usage.total && key.usage.total.outputTokens) || 0) }}</span>
-                </div>
-                <div v-if="((key.usage && key.usage.total && key.usage.total.cacheCreateTokens) || 0) > 0" class="flex justify-between">
-                  <span class="text-gray-600">缓存创建:</span>
-                  <span class="font-medium text-purple-600">{{ formatNumber((key.usage && key.usage.total && key.usage.total.cacheCreateTokens) || 0) }}</span>
-                </div>
-                <div v-if="((key.usage && key.usage.total && key.usage.total.cacheReadTokens) || 0) > 0" class="flex justify-between">
-                  <span class="text-gray-600">缓存读取:</span>
-                  <span class="font-medium text-purple-600">{{ formatNumber((key.usage && key.usage.total && key.usage.total.cacheReadTokens) || 0) }}</span>
-                </div>
-              </div>
-              
-              <!-- 今日统计 -->
-              <div class="pt-2 mt-2 border-t border-gray-100">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">今日请求:</span>
-                  <span class="font-medium text-green-600">{{ formatNumber((key.usage && key.usage.daily && key.usage.daily.requests) || 0) }} 次</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">今日 Token:</span>
-                  <span class="font-medium text-green-600">{{ formatNumber((key.usage && key.usage.daily && key.usage.daily.tokens) || 0) }}</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -959,6 +987,13 @@
       @close="closeExpiryEdit"
       @save="handleSaveExpiry"
     />
+    
+    <!-- 使用详情弹窗 -->
+    <UsageDetailModal
+      :show="showUsageDetailModal"
+      :api-key="selectedApiKeyForDetail || {}"
+      @close="showUsageDetailModal = false"
+    />
   </div>
 </template>
 
@@ -973,6 +1008,7 @@ import RenewApiKeyModal from '@/components/apikeys/RenewApiKeyModal.vue'
 import NewApiKeyModal from '@/components/apikeys/NewApiKeyModal.vue'
 import BatchApiKeyModal from '@/components/apikeys/BatchApiKeyModal.vue'
 import ExpiryEditModal from '@/components/apikeys/ExpiryEditModal.vue'
+import UsageDetailModal from '@/components/apikeys/UsageDetailModal.vue'
 
 // 响应式数据
 const clientsStore = useClientsStore()
@@ -988,13 +1024,13 @@ const defaultTime = ref([new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 2, 1, 23,
 const accounts = ref({ claude: [], gemini: [], claudeGroups: [], geminiGroups: [] })
 const editingExpiryKey = ref(null)
 const expiryEditModalRef = ref(null)
+const showUsageDetailModal = ref(false)
+const selectedApiKeyForDetail = ref(null)
 
 // 标签相关
 const selectedTagFilter = ref('')
 const availableTags = ref([])
 
-// 移动端展开状态
-const expandedKeys = ref([])
 
 // 分页相关
 const currentPage = ref(1)
@@ -1183,16 +1219,36 @@ const calculateApiKeyCost = (usage) => {
 const getBoundAccountName = (accountId) => {
   if (!accountId) return '未知账户'
   
+  // 检查是否是分组
+  if (accountId.startsWith('group:')) {
+    const groupId = accountId.substring(6) // 移除 'group:' 前缀
+    
+    // 从Claude分组中查找
+    const claudeGroup = accounts.value.claudeGroups.find(g => g.id === groupId)
+    if (claudeGroup) {
+      return `分组-${claudeGroup.name}`
+    }
+    
+    // 从Gemini分组中查找
+    const geminiGroup = accounts.value.geminiGroups.find(g => g.id === groupId)
+    if (geminiGroup) {
+      return `分组-${geminiGroup.name}`
+    }
+    
+    // 如果找不到分组，返回分组ID的前8位
+    return `分组-${groupId.substring(0, 8)}`
+  }
+  
   // 从Claude账户列表中查找
   const claudeAccount = accounts.value.claude.find(acc => acc.id === accountId)
   if (claudeAccount) {
-    return claudeAccount.name
+    return `账户-${claudeAccount.name}`
   }
   
   // 从Gemini账户列表中查找
   const geminiAccount = accounts.value.gemini.find(acc => acc.id === accountId)
   if (geminiAccount) {
-    return geminiAccount.name
+    return `账户-${geminiAccount.name}`
   }
   
   // 如果找不到，返回账户ID的前8位
@@ -1548,15 +1604,6 @@ const handleSaveExpiry = async ({ keyId, expiresAt }) => {
   }
 }
 
-// 切换移动端卡片展开状态
-const toggleExpanded = (keyId) => {
-  const index = expandedKeys.value.indexOf(keyId)
-  if (index > -1) {
-    expandedKeys.value.splice(index, 1)
-  } else {
-    expandedKeys.value.push(keyId)
-  }
-}
 
 // 格式化日期时间
 const formatDate = (dateString) => {
@@ -1571,25 +1618,67 @@ const formatDate = (dateString) => {
   }).replace(/\//g, '-')
 }
 
-// 显示API Key详情
-const showApiKey = async (apiKey) => {
-  try {
-    // 重新获取API Key的完整信息（包含实际的key值）
-    const response = await apiClient.get(`/admin/api-keys/${apiKey.id}`)
-    if (response.success && response.data) {
-      newApiKeyData.value = {
-        ...response.data,
-        key: response.data.key || response.data.apiKey // 兼容不同的字段名
-      }
-      showNewApiKeyModal.value = true
-    } else {
-      showToast('获取API Key信息失败', 'error')
-    }
-  } catch (error) {
-    console.error('Error fetching API key:', error)
-    showToast('获取API Key信息失败', 'error')
-  }
+// 获取每日费用进度
+const getDailyCostProgress = (key) => {
+  if (!key.dailyCostLimit || key.dailyCostLimit === 0) return 0
+  const percentage = ((key.dailyCost || 0) / key.dailyCostLimit) * 100
+  return Math.min(percentage, 100)
 }
+
+// 获取每日费用进度条颜色
+const getDailyCostProgressColor = (key) => {
+  const progress = getDailyCostProgress(key)
+  if (progress >= 100) return 'bg-red-500'
+  if (progress >= 80) return 'bg-yellow-500'
+  return 'bg-green-500'
+}
+
+// 显示使用详情
+const showUsageDetails = (apiKey) => {
+  selectedApiKeyForDetail.value = apiKey
+  showUsageDetailModal.value = true
+}
+
+// 格式化Token数量（使用K/M单位）
+const formatTokenCount = (count) => {
+  if (count >= 1000000) {
+    return (count / 1000000).toFixed(1) + 'M'
+  } else if (count >= 1000) {
+    return (count / 1000).toFixed(1) + 'K'
+  }
+  return count.toString()
+}
+
+// 获取窗口请求进度
+const getWindowRequestProgress = (key) => {
+  if (!key.rateLimitRequests || key.rateLimitRequests === 0) return 0
+  const percentage = ((key.currentWindowRequests || 0) / key.rateLimitRequests) * 100
+  return Math.min(percentage, 100)
+}
+
+// 获取窗口请求进度条颜色
+const getWindowRequestProgressColor = (key) => {
+  const progress = getWindowRequestProgress(key)
+  if (progress >= 100) return 'bg-red-500'
+  if (progress >= 80) return 'bg-yellow-500'
+  return 'bg-blue-500'
+}
+
+// 获取窗口Token进度
+const getWindowTokenProgress = (key) => {
+  if (!key.tokenLimit || key.tokenLimit === 0) return 0
+  const percentage = ((key.currentWindowTokens || 0) / key.tokenLimit) * 100
+  return Math.min(percentage, 100)
+}
+
+// 获取窗口Token进度条颜色
+const getWindowTokenProgressColor = (key) => {
+  const progress = getWindowTokenProgress(key)
+  if (progress >= 100) return 'bg-red-500'
+  if (progress >= 80) return 'bg-yellow-500'
+  return 'bg-purple-500'
+}
+
 
 // 监听筛选条件变化，重置页码
 watch([selectedTagFilter, apiKeyStatsTimeRange], () => {

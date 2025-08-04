@@ -180,8 +180,12 @@
               <i class="fas fa-font text-white text-sm" />
             </div>
             <div>
-              <h4 class="text-sm font-semibold text-gray-900">网站名称</h4>
-              <p class="text-xs text-gray-500">品牌标识</p>
+              <h4 class="text-sm font-semibold text-gray-900">
+                网站名称
+              </h4>
+              <p class="text-xs text-gray-500">
+                品牌标识
+              </p>
             </div>
           </div>
           <div class="space-y-2">
@@ -205,8 +209,12 @@
               <i class="fas fa-image text-white text-sm" />
             </div>
             <div>
-              <h4 class="text-sm font-semibold text-gray-900">网站图标</h4>
-              <p class="text-xs text-gray-500">Favicon</p>
+              <h4 class="text-sm font-semibold text-gray-900">
+                网站图标
+              </h4>
+              <p class="text-xs text-gray-500">
+                Favicon
+              </p>
             </div>
           </div>
           <div class="space-y-3">

@@ -38,7 +38,9 @@
           v-if="showCreateForm"
           class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200"
         >
-          <h4 class="text-lg font-semibold text-gray-900 mb-4">创建新分组</h4>
+          <h4 class="text-lg font-semibold text-gray-900 mb-4">
+            创建新分组
+          </h4>
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">分组名称 *</label>
@@ -113,7 +115,9 @@
             class="text-center py-8"
           >
             <div class="loading-spinner-lg mx-auto mb-4" />
-            <p class="text-gray-500">加载中...</p>
+            <p class="text-gray-500">
+              加载中...
+            </p>
           </div>
           
           <div
@@ -121,7 +125,9 @@
             class="text-center py-8 bg-gray-50 rounded-lg"
           >
             <i class="fas fa-layer-group text-4xl text-gray-300 mb-4" />
-            <p class="text-gray-500">暂无分组</p>
+            <p class="text-gray-500">
+              暂无分组
+            </p>
           </div>
           
           <div
@@ -135,8 +141,12 @@
             >
               <div class="flex items-start justify-between mb-3">
                 <div class="flex-1">
-                  <h4 class="font-semibold text-gray-900">{{ group.name }}</h4>
-                  <p class="text-sm text-gray-500 mt-1">{{ group.description || '暂无描述' }}</p>
+                  <h4 class="font-semibold text-gray-900">
+                    {{ group.name }}
+                  </h4>
+                  <p class="text-sm text-gray-500 mt-1">
+                    {{ group.description || '暂无描述' }}
+                  </p>
                 </div>
                 <div class="flex items-center gap-2 ml-4">
                   <span
@@ -194,7 +204,9 @@
     >
       <div class="modal-content w-full max-w-lg p-4 sm:p-6">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-bold text-gray-900">编辑分组</h3>
+          <h3 class="text-lg font-bold text-gray-900">
+            编辑分组
+          </h3>
           <button
             class="text-gray-400 hover:text-gray-600 transition-colors"
             @click="cancelEdit"

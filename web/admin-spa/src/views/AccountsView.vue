@@ -38,8 +38,12 @@
               class="form-input px-3 py-2 text-sm w-full sm:w-auto"
               @change="filterByGroup"
             >
-              <option value="all">所有账户</option>
-              <option value="ungrouped">未分组账户</option>
+              <option value="all">
+                所有账户
+              </option>
+              <option value="ungrouped">
+                未分组账户
+              </option>
               <option
                 v-for="group in accountGroups"
                 :key="group.id"
@@ -177,7 +181,10 @@
                   </div>
                   <div class="min-w-0">
                     <div class="flex items-center gap-2">
-                      <div class="text-sm font-semibold text-gray-900 truncate" :title="account.name">
+                      <div
+                        class="text-sm font-semibold text-gray-900 truncate"
+                        :title="account.name"
+                      >
                         {{ account.name }}
                       </div>
                       <span
@@ -206,7 +213,10 @@
                         <i class="fas fa-folder mr-1" />{{ account.groupInfo.name }}
                       </span>
                     </div>
-                    <div class="text-xs text-gray-500 truncate" :title="account.id">
+                    <div
+                      class="text-xs text-gray-500 truncate"
+                      :title="account.id"
+                    >
                       {{ account.id }}
                     </div>
                   </div>
@@ -221,7 +231,7 @@
                   >
                     <i class="fas fa-robot text-yellow-700 text-xs" />
                     <span class="text-xs font-semibold text-yellow-800">Gemini</span>
-                    <span class="w-px h-4 bg-yellow-300 mx-1"></span>
+                    <span class="w-px h-4 bg-yellow-300 mx-1" />
                     <span class="text-xs font-medium text-yellow-700">
                       {{ (account.scopes && account.scopes.length > 0) ? 'OAuth' : '传统' }}
                     </span>
@@ -232,7 +242,7 @@
                   >
                     <i class="fas fa-terminal text-purple-700 text-xs" />
                     <span class="text-xs font-semibold text-purple-800">Console</span>
-                    <span class="w-px h-4 bg-purple-300 mx-1"></span>
+                    <span class="w-px h-4 bg-purple-300 mx-1" />
                     <span class="text-xs font-medium text-purple-700">API Key</span>
                   </div>
                   <div
@@ -241,7 +251,7 @@
                   >
                     <i class="fas fa-brain text-indigo-700 text-xs" />
                     <span class="text-xs font-semibold text-indigo-800">Claude</span>
-                    <span class="w-px h-4 bg-indigo-300 mx-1"></span>
+                    <span class="w-px h-4 bg-indigo-300 mx-1" />
                     <span class="text-xs font-medium text-indigo-700">
                       {{ (account.scopes && account.scopes.length > 0) ? 'OAuth' : '传统' }}
                     </span>
@@ -615,8 +625,8 @@
               :class="account.schedulable 
                 ? 'text-gray-600 bg-gray-50 hover:bg-gray-100' 
                 : 'text-green-600 bg-green-50 hover:bg-green-100'"
-              @click="toggleSchedulable(account)"
               :disabled="account.isTogglingSchedulable"
+              @click="toggleSchedulable(account)"
             >
               <i :class="['fas', account.schedulable ? 'fa-pause' : 'fa-play']" />
               {{ account.schedulable ? '暂停' : '启用' }}

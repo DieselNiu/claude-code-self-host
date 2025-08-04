@@ -183,7 +183,9 @@
                   class="form-input flex-1"
                   required
                 >
-                  <option value="">请选择分组</option>
+                  <option value="">
+                    请选择分组
+                  </option>
                   <option 
                     v-for="group in filteredGroups" 
                     :key="group.id" 
@@ -191,14 +193,19 @@
                   >
                     {{ group.name }} ({{ group.memberCount || 0 }} 个成员)
                   </option>
-                  <option value="__new__">+ 新建分组</option>
+                  <option value="__new__">
+                    + 新建分组
+                  </option>
                 </select>
                 <button
                   type="button"
                   class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   @click="refreshGroups"
                 >
-                  <i class="fas fa-sync-alt" :class="{ 'animate-spin': loadingGroups }" />
+                  <i
+                    class="fas fa-sync-alt"
+                    :class="{ 'animate-spin': loadingGroups }"
+                  />
                 </button>
               </div>
             </div>
@@ -561,7 +568,9 @@
                 class="form-input flex-1"
                 required
               >
-                <option value="">请选择分组</option>
+                <option value="">
+                  请选择分组
+                </option>
                 <option 
                   v-for="group in filteredGroups" 
                   :key="group.id" 
@@ -569,14 +578,19 @@
                 >
                   {{ group.name }} ({{ group.memberCount || 0 }} 个成员)
                 </option>
-                <option value="__new__">+ 新建分组</option>
+                <option value="__new__">
+                  + 新建分组
+                </option>
               </select>
               <button
                 type="button"
                 class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 @click="refreshGroups"
               >
-                <i class="fas fa-sync-alt" :class="{ 'animate-spin': loadingGroups }" />
+                <i
+                  class="fas fa-sync-alt"
+                  :class="{ 'animate-spin': loadingGroups }"
+                />
               </button>
             </div>
           </div>
