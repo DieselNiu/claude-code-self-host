@@ -425,87 +425,27 @@
             <div class="grid grid-cols-1 gap-3">
               <div>
                 <label class="block text-sm font-medium text-gray-600 mb-1">Claude 专属账号</label>
-                <select 
-                  v-model="form.claudeAccountId" 
-                  class="form-input w-full"
+                <AccountSelector
+                  v-model="form.claudeAccountId"
+                  platform="claude"
+                  :accounts="localAccounts.claude"
+                  :groups="localAccounts.claudeGroups"
                   :disabled="form.permissions === 'gemini'"
-                >
-                  <option value="">
-                    使用共享账号池
-                  </option>
-                  <optgroup
-                    v-if="localAccounts.claudeGroups && localAccounts.claudeGroups.length > 0"
-                    label="调度分组"
-                  >
-                    <option 
-                      v-for="group in localAccounts.claudeGroups" 
-                      :key="`group:${group.id}`" 
-                      :value="`group:${group.id}`"
-                    >
-                      {{ group.name }} ({{ group.memberCount || 0 }} 个成员)
-                    </option>
-                  </optgroup>
-                  <optgroup
-                    v-if="localAccounts.claude.filter(a => a.accountType === 'dedicated' && a.platform === 'claude-oauth').length > 0"
-                    label="Claude OAuth 专属账号"
-                  >
-                    <option 
-                      v-for="account in localAccounts.claude.filter(a => a.accountType === 'dedicated' && a.platform === 'claude-oauth')" 
-                      :key="account.id" 
-                      :value="account.id"
-                    >
-                      {{ account.name }} ({{ account.status === 'active' ? '正常' : '异常' }})
-                    </option>
-                  </optgroup>
-                  <optgroup
-                    v-if="localAccounts.claude.filter(a => a.accountType === 'dedicated' && a.platform === 'claude-console').length > 0"
-                    label="Claude Console 专属账号"
-                  >
-                    <option 
-                      v-for="account in localAccounts.claude.filter(a => a.accountType === 'dedicated' && a.platform === 'claude-console')" 
-                      :key="account.id" 
-                      :value="`console:${account.id}`"
-                    >
-                      {{ account.name }} ({{ account.status === 'active' ? '正常' : '异常' }})
-                    </option>
-                  </optgroup>
-                </select>
+                  placeholder="请选择Claude账号"
+                  default-option-text="使用共享账号池"
+                />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-600 mb-1">Gemini 专属账号</label>
-                <select 
-                  v-model="form.geminiAccountId" 
-                  class="form-input w-full"
+                <AccountSelector
+                  v-model="form.geminiAccountId"
+                  platform="gemini"
+                  :accounts="localAccounts.gemini"
+                  :groups="localAccounts.geminiGroups"
                   :disabled="form.permissions === 'claude'"
-                >
-                  <option value="">
-                    使用共享账号池
-                  </option>
-                  <optgroup
-                    v-if="localAccounts.geminiGroups && localAccounts.geminiGroups.length > 0"
-                    label="调度分组"
-                  >
-                    <option 
-                      v-for="group in localAccounts.geminiGroups" 
-                      :key="`group:${group.id}`" 
-                      :value="`group:${group.id}`"
-                    >
-                      {{ group.name }} ({{ group.memberCount || 0 }} 个成员)
-                    </option>
-                  </optgroup>
-                  <optgroup
-                    v-if="localAccounts.gemini.filter(a => a.accountType === 'dedicated').length > 0"
-                    label="Gemini 专属账号"
-                  >
-                    <option 
-                      v-for="account in localAccounts.gemini.filter(a => a.accountType === 'dedicated')" 
-                      :key="account.id" 
-                      :value="account.id"
-                    >
-                      {{ account.name }} ({{ account.status === 'active' ? '正常' : '异常' }})
-                    </option>
-                  </optgroup>
-                </select>
+                  placeholder="请选择Gemini账号"
+                  default-option-text="使用共享账号池"
+                />
               </div>
             </div>
             <p class="text-xs text-gray-500 mt-2">
@@ -665,6 +605,7 @@ import { showToast } from '@/utils/toast'
 import { useClientsStore } from '@/stores/clients'
 import { useApiKeysStore } from '@/stores/apiKeys'
 import { apiClient } from '@/config/api'
+import AccountSelector from '@/components/common/AccountSelector.vue'
 
 const props = defineProps({
   accounts: {

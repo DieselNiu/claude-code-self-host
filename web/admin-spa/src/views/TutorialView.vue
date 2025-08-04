@@ -338,6 +338,85 @@
             </p>
           </div>
         </div>
+
+        <!-- Gemini CLI 环境变量设置 -->
+        <div class="mt-8">
+          <h5 class="text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3 flex items-center">
+            <i class="fas fa-robot text-green-600 mr-2" />
+            配置 Gemini CLI 环境变量
+          </h5>
+          <p class="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
+            如果你使用 Gemini CLI，需要设置以下环境变量：
+          </p>
+          
+          <div class="space-y-4">
+            <div class="bg-white rounded-lg p-3 sm:p-4 border border-green-200">
+              <h6 class="font-medium text-sm sm:text-base text-gray-800 mb-2">
+                PowerShell 设置方法
+              </h6>
+              <p class="text-gray-600 text-sm mb-3">
+                在 PowerShell 中运行以下命令：
+              </p>
+              <div class="bg-gray-900 text-green-400 p-2 sm:p-3 rounded font-mono text-xs sm:text-sm overflow-x-auto">
+                <div class="text-gray-300 whitespace-nowrap">
+                  $env:CODE_ASSIST_ENDPOINT = "{{ geminiBaseUrl }}"
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  $env:GOOGLE_CLOUD_ACCESS_TOKEN = "你的API密钥"
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  $env:GOOGLE_GENAI_USE_GCA = "true"
+                </div>
+              </div>
+              <p class="text-yellow-700 text-xs mt-2">
+                💡 使用与 Claude Code 相同的 API 密钥即可。
+              </p>
+            </div>
+
+            <div class="bg-white rounded-lg p-3 sm:p-4 border border-green-200">
+              <h6 class="font-medium text-sm sm:text-base text-gray-800 mb-2">
+                系统环境变量（永久设置）
+              </h6>
+              <p class="text-gray-600 text-sm mb-3">
+                在系统环境变量中添加：
+              </p>
+              <div class="space-y-2">
+                <div class="bg-gray-100 p-2 rounded text-sm">
+                  <strong>变量名：</strong> CODE_ASSIST_ENDPOINT<br>
+                  <strong>变量值：</strong> <span class="font-mono">{{ geminiBaseUrl }}</span>
+                </div>
+                <div class="bg-gray-100 p-2 rounded text-sm">
+                  <strong>变量名：</strong> GOOGLE_CLOUD_ACCESS_TOKEN<br>
+                  <strong>变量值：</strong> <span class="font-mono">你的API密钥</span>
+                </div>
+                <div class="bg-gray-100 p-2 rounded text-sm">
+                  <strong>变量名：</strong> GOOGLE_GENAI_USE_GCA<br>
+                  <strong>变量值：</strong> <span class="font-mono">true</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+              <h6 class="font-medium text-green-800 mb-2">
+                验证 Gemini CLI 环境变量
+              </h6>
+              <p class="text-green-700 text-sm mb-3">
+                在 PowerShell 中验证：
+              </p>
+              <div class="bg-gray-900 text-green-400 p-2 sm:p-3 rounded font-mono text-xs sm:text-sm overflow-x-auto space-y-1">
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo $env:CODE_ASSIST_ENDPOINT
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo $env:GOOGLE_CLOUD_ACCESS_TOKEN
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo $env:GOOGLE_GENAI_USE_GCA
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 第五步：开始使用 -->
@@ -652,6 +731,105 @@
                 </div>
                 <div class="text-gray-300 whitespace-nowrap">
                   source ~/.bash_profile
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gemini CLI 环境变量设置 -->
+        <div class="mt-8">
+          <h5 class="text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3 flex items-center">
+            <i class="fas fa-robot text-green-600 mr-2" />
+            配置 Gemini CLI 环境变量
+          </h5>
+          <p class="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
+            如果你使用 Gemini CLI，需要设置以下环境变量：
+          </p>
+          
+          <div class="space-y-4">
+            <div class="bg-white rounded-lg p-3 sm:p-4 border border-green-200">
+              <h6 class="font-medium text-sm sm:text-base text-gray-800 mb-2">
+                Terminal 设置方法
+              </h6>
+              <p class="text-gray-600 text-sm mb-3">
+                在 Terminal 中运行以下命令：
+              </p>
+              <div class="bg-gray-900 text-green-400 p-2 sm:p-3 rounded font-mono text-xs sm:text-sm overflow-x-auto">
+                <div class="text-gray-300 whitespace-nowrap">
+                  export CODE_ASSIST_ENDPOINT="{{ geminiBaseUrl }}"
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  export GOOGLE_CLOUD_ACCESS_TOKEN="你的API密钥"
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  export GOOGLE_GENAI_USE_GCA="true"
+                </div>
+              </div>
+              <p class="text-yellow-700 text-xs mt-2">
+                💡 使用与 Claude Code 相同的 API 密钥即可。
+              </p>
+            </div>
+
+            <div class="bg-white rounded-lg p-3 sm:p-4 border border-green-200">
+              <h6 class="font-medium text-sm sm:text-base text-gray-800 mb-2">
+                永久设置方法
+              </h6>
+              <p class="text-gray-600 text-sm mb-3">
+                添加到你的 shell 配置文件：
+              </p>
+              <div class="bg-gray-900 text-green-400 p-2 sm:p-3 rounded font-mono text-xs sm:text-sm overflow-x-auto mb-3">
+                <div class="mb-2">
+                  # 对于 zsh (默认)
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo 'export CODE_ASSIST_ENDPOINT="{{ geminiBaseUrl }}"' >> ~/.zshrc
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo 'export GOOGLE_CLOUD_ACCESS_TOKEN="你的API密钥"' >> ~/.zshrc
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo 'export GOOGLE_GENAI_USE_GCA="true"' >> ~/.zshrc
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  source ~/.zshrc
+                </div>
+              </div>
+              <div class="bg-gray-900 text-green-400 p-2 sm:p-3 rounded font-mono text-xs sm:text-sm overflow-x-auto">
+                <div class="mb-2">
+                  # 对于 bash
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo 'export CODE_ASSIST_ENDPOINT="{{ geminiBaseUrl }}"' >> ~/.bash_profile
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo 'export GOOGLE_CLOUD_ACCESS_TOKEN="你的API密钥"' >> ~/.bash_profile
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo 'export GOOGLE_GENAI_USE_GCA="true"' >> ~/.bash_profile
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  source ~/.bash_profile
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+              <h6 class="font-medium text-green-800 mb-2">
+                验证 Gemini CLI 环境变量
+              </h6>
+              <p class="text-green-700 text-sm mb-3">
+                在 Terminal 中验证：
+              </p>
+              <div class="bg-gray-900 text-green-400 p-2 sm:p-3 rounded font-mono text-xs sm:text-sm overflow-x-auto space-y-1">
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo $CODE_ASSIST_ENDPOINT
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo $GOOGLE_CLOUD_ACCESS_TOKEN
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo $GOOGLE_GENAI_USE_GCA
                 </div>
               </div>
             </div>
@@ -987,6 +1165,105 @@
             </div>
           </div>
         </div>
+
+        <!-- Gemini CLI 环境变量设置 -->
+        <div class="mt-8">
+          <h5 class="text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3 flex items-center">
+            <i class="fas fa-robot text-green-600 mr-2" />
+            配置 Gemini CLI 环境变量
+          </h5>
+          <p class="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
+            如果你使用 Gemini CLI，需要设置以下环境变量：
+          </p>
+          
+          <div class="space-y-4">
+            <div class="bg-white rounded-lg p-3 sm:p-4 border border-green-200">
+              <h6 class="font-medium text-sm sm:text-base text-gray-800 mb-2">
+                终端设置方法
+              </h6>
+              <p class="text-gray-600 text-sm mb-3">
+                在终端中运行以下命令：
+              </p>
+              <div class="bg-gray-900 text-green-400 p-2 sm:p-3 rounded font-mono text-xs sm:text-sm overflow-x-auto">
+                <div class="text-gray-300 whitespace-nowrap">
+                  export CODE_ASSIST_ENDPOINT="{{ geminiBaseUrl }}"
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  export GOOGLE_CLOUD_ACCESS_TOKEN="你的API密钥"
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  export GOOGLE_GENAI_USE_GCA="true"
+                </div>
+              </div>
+              <p class="text-yellow-700 text-xs mt-2">
+                💡 使用与 Claude Code 相同的 API 密钥即可。
+              </p>
+            </div>
+
+            <div class="bg-white rounded-lg p-3 sm:p-4 border border-green-200">
+              <h6 class="font-medium text-sm sm:text-base text-gray-800 mb-2">
+                永久设置方法
+              </h6>
+              <p class="text-gray-600 text-sm mb-3">
+                添加到你的 shell 配置文件：
+              </p>
+              <div class="bg-gray-900 text-green-400 p-2 sm:p-3 rounded font-mono text-xs sm:text-sm overflow-x-auto mb-3">
+                <div class="mb-2">
+                  # 对于 bash (默认)
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo 'export CODE_ASSIST_ENDPOINT="{{ geminiBaseUrl }}"' >> ~/.bashrc
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo 'export GOOGLE_CLOUD_ACCESS_TOKEN="你的API密钥"' >> ~/.bashrc
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo 'export GOOGLE_GENAI_USE_GCA="true"' >> ~/.bashrc
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  source ~/.bashrc
+                </div>
+              </div>
+              <div class="bg-gray-900 text-green-400 p-2 sm:p-3 rounded font-mono text-xs sm:text-sm overflow-x-auto">
+                <div class="mb-2">
+                  # 对于 zsh
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo 'export CODE_ASSIST_ENDPOINT="{{ geminiBaseUrl }}"' >> ~/.zshrc
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo 'export GOOGLE_CLOUD_ACCESS_TOKEN="你的API密钥"' >> ~/.zshrc
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo 'export GOOGLE_GENAI_USE_GCA="true"' >> ~/.zshrc
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  source ~/.zshrc
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+              <h6 class="font-medium text-green-800 mb-2">
+                验证 Gemini CLI 环境变量
+              </h6>
+              <p class="text-green-700 text-sm mb-3">
+                在终端中验证：
+              </p>
+              <div class="bg-gray-900 text-green-400 p-2 sm:p-3 rounded font-mono text-xs sm:text-sm overflow-x-auto space-y-1">
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo $CODE_ASSIST_ENDPOINT
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo $GOOGLE_CLOUD_ACCESS_TOKEN
+                </div>
+                <div class="text-gray-300 whitespace-nowrap">
+                  echo $GOOGLE_GENAI_USE_GCA
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 第四步：开始使用 -->
@@ -1130,8 +1407,8 @@ const tutorialSystems = [
   { key: 'linux', name: 'Linux / WSL2', icon: 'fab fa-linux' },
 ]
 
-// 当前基础URL
-const currentBaseUrl = computed(() => {
+// 获取基础URL前缀
+const getBaseUrlPrefix = () => {
   // 更健壮的获取 origin 的方法，兼容旧版浏览器和特殊环境
   let origin = ''
   
@@ -1163,11 +1440,21 @@ const currentBaseUrl = computed(() => {
     } else {
       // 最后的降级方案，使用相对路径
       console.warn('无法获取完整的 origin，将使用相对路径')
-      return '/api'
+      return ''
     }
   }
   
-  return origin + '/api'
+  return origin
+}
+
+// 当前基础URL - Claude Code
+const currentBaseUrl = computed(() => {
+  return getBaseUrlPrefix() + '/api'
+})
+
+// Gemini CLI 基础URL
+const geminiBaseUrl = computed(() => {
+  return getBaseUrlPrefix() + '/gemini'
 })
 </script>
 

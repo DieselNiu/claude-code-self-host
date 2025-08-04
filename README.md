@@ -451,19 +451,31 @@ docker-compose.yml 已包含：
    - **客户端限制**: 限制只允许特定客户端使用（如ClaudeCode、Gemini-CLI等）
 5. 保存，记下生成的Key
 
-### 4. 开始使用Claude code
+### 4. 开始使用 Claude Code 和 Gemini CLI
 
 现在你可以用自己的服务替换官方API了：
 
-**设置环境变量：**
+**Claude Code 设置环境变量：**
 ```bash
 export ANTHROPIC_BASE_URL="http://127.0.0.1:3000/api/" # 根据实际填写你服务器的ip地址或者域名
 export ANTHROPIC_AUTH_TOKEN="后台创建的API密钥"
 ```
 
-**使用claude：**
+**Gemini CLI 设置环境变量：**
+```bash
+export CODE_ASSIST_ENDPOINT="http://127.0.0.1:3000/gemini" # 根据实际填写你服务器的ip地址或者域名
+export GOOGLE_CLOUD_ACCESS_TOKEN="后台创建的API密钥"  # 使用相同的API密钥即可
+export GOOGLE_GENAI_USE_GCA="true"
+```
+
+**使用 Claude Code：**
 ```bash
 claude
+```
+
+**使用 Gemini CLI：**
+```bash
+gemini  # 或其他 Gemini CLI 命令
 ```
 
 ### 5. 第三方工具API接入

@@ -1050,8 +1050,10 @@ const toggleSchedulable = async (account) => {
       endpoint = `/admin/claude-accounts/${account.id}/toggle-schedulable`
     } else if (account.platform === 'claude-console') {
       endpoint = `/admin/claude-console-accounts/${account.id}/toggle-schedulable`
+    } else if (account.platform === 'gemini') {
+      endpoint = `/admin/gemini-accounts/${account.id}/toggle-schedulable`
     } else {
-      showToast('Gemini账户暂不支持调度控制', 'warning')
+      showToast('该账户类型暂不支持调度控制', 'warning')
       return
     }
     

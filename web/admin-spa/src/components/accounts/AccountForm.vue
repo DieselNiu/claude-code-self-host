@@ -210,26 +210,26 @@
               </div>
             </div>
             
-            <!-- Gemini 项目编号字段 -->
+            <!-- Gemini 项目 ID 字段 -->
             <div v-if="form.platform === 'gemini'">
-              <label class="block text-sm font-semibold text-gray-700 mb-3">项目编号 (可选)</label>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">项目 ID (可选)</label>
               <input 
                 v-model="form.projectId" 
                 type="text" 
                 class="form-input w-full"
-                placeholder="例如：123456789012（纯数字）"
+                placeholder="例如：verdant-wares-464411-k9"
               >
               <div class="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <div class="flex items-start gap-2">
                   <i class="fas fa-info-circle text-yellow-600 mt-0.5" />
                   <div class="text-xs text-yellow-700">
                     <p class="font-medium mb-1">
-                      Google Cloud/Workspace 账号需要提供项目编号
+                      Google Cloud/Workspace 账号需要提供项目 ID
                     </p>
-                    <p>某些 Google 账号（特别是绑定了 Google Cloud 的账号）会被识别为 Workspace 账号，需要提供额外的项目编号。</p>
+                    <p>某些 Google 账号（特别是绑定了 Google Cloud 的账号）会被识别为 Workspace 账号，需要提供额外的项目 ID。</p>
                     <div class="mt-2 p-2 bg-white rounded border border-yellow-300">
                       <p class="font-medium mb-1">
-                        如何获取项目编号：
+                        如何获取项目 ID：
                       </p>
                       <ol class="list-decimal list-inside space-y-1 ml-2">
                         <li>
@@ -239,9 +239,9 @@
                             class="text-blue-600 hover:underline font-medium"
                           >Google Cloud Console</a>
                         </li>
-                        <li>复制<span class="font-semibold text-red-600">项目编号（Project Number）</span>，通常是12位纯数字</li>
+                        <li>复制<span class="font-semibold text-red-600">项目 ID（Project ID）</span>，通常是字符串格式</li>
                         <li class="text-red-600">
-                          ⚠️ 注意：不要复制项目ID（Project ID），要复制项目编号！
+                          ⚠️ 注意：要复制项目 ID（Project ID），不要复制项目编号（Project Number）！
                         </li>
                       </ol>
                     </div>
@@ -595,17 +595,17 @@
             </div>
           </div>
           
-          <!-- Gemini 项目编号字段 -->
+          <!-- Gemini 项目 ID 字段 -->
           <div v-if="form.platform === 'gemini'">
-            <label class="block text-sm font-semibold text-gray-700 mb-3">项目编号 (可选)</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-3">项目 ID (可选)</label>
             <input 
               v-model="form.projectId" 
               type="text" 
               class="form-input w-full"
-              placeholder="例如：123456789012（纯数字）"
+              placeholder="例如：verdant-wares-464411-k9"
             >
             <p class="text-xs text-gray-500 mt-2">
-              Google Cloud/Workspace 账号可能需要提供项目编号
+              Google Cloud/Workspace 账号可能需要提供项目 ID
             </p>
           </div>
           
@@ -870,7 +870,19 @@ const form = ref({
   apiUrl: props.account?.apiUrl || '',
   apiKey: props.account?.apiKey || '',
   priority: props.account?.priority || 50,
-  supportedModels: props.account?.supportedModels?.join('\n') || '',
+  supportedModels: (() => {
+    const models = props.account?.supportedModels;
+    if (!models) return '';
+    // 处理对象格式（Claude Console 的新格式）
+    if (typeof models === 'object' && !Array.isArray(models)) {
+      return Object.keys(models).join('\n');
+    }
+    // 处理数组格式（向后兼容）
+    if (Array.isArray(models)) {
+      return models.join('\n');
+    }
+    return '';
+  })(),
   userAgent: props.account?.userAgent || '',
   rateLimitDuration: props.account?.rateLimitDuration || 60
 })
@@ -914,13 +926,13 @@ const nextStep = async () => {
     return
   }
   
-  // 对于Gemini账户，检查项目编号
+  // 对于Gemini账户，检查项目 ID
   if (form.value.platform === 'gemini' && oauthStep.value === 1 && form.value.addType === 'oauth') {
     if (!form.value.projectId || form.value.projectId.trim() === '') {
       // 使用自定义确认弹窗
       const confirmed = await showConfirm(
-        '项目编号未填写',
-        '您尚未填写项目编号。\n\n如果您的Google账号绑定了Google Cloud或被识别为Workspace账号，需要提供项目编号。\n如果您使用的是普通个人账号，可以继续不填写。',
+        '项目 ID 未填写',
+        '您尚未填写项目 ID。\n\n如果您的Google账号绑定了Google Cloud或被识别为Workspace账号，需要提供项目 ID。\n如果您使用的是普通个人账号，可以继续不填写。',
         '继续',
         '返回填写'
       )
@@ -1110,13 +1122,13 @@ const updateAccount = async () => {
     return
   }
   
-  // 对于Gemini账户，检查项目编号
+  // 对于Gemini账户，检查项目 ID
   if (form.value.platform === 'gemini') {
     if (!form.value.projectId || form.value.projectId.trim() === '') {
       // 使用自定义确认弹窗
       const confirmed = await showConfirm(
-        '项目编号未填写',
-        '您尚未填写项目编号。\n\n如果您的Google账号绑定了Google Cloud或被识别为Workspace账号，需要提供项目编号。\n如果您使用的是普通个人账号，可以继续不填写。',
+        '项目 ID 未填写',
+        '您尚未填写项目 ID。\n\n如果您的Google账号绑定了Google Cloud或被识别为Workspace账号，需要提供项目 ID。\n如果您使用的是普通个人账号，可以继续不填写。',
         '继续保存',
         '返回填写'
       )
@@ -1362,7 +1374,19 @@ watch(() => props.account, (newAccount) => {
       apiUrl: newAccount.apiUrl || '',
       apiKey: '',  // 编辑模式不显示现有的 API Key
       priority: newAccount.priority || 50,
-      supportedModels: newAccount.supportedModels?.join('\n') || '',
+      supportedModels: (() => {
+        const models = newAccount.supportedModels;
+        if (!models) return '';
+        // 处理对象格式（Claude Console 的新格式）
+        if (typeof models === 'object' && !Array.isArray(models)) {
+          return Object.keys(models).join('\n');
+        }
+        // 处理数组格式（向后兼容）
+        if (Array.isArray(models)) {
+          return models.join('\n');
+        }
+        return '';
+      })(),
       userAgent: newAccount.userAgent || '',
       rateLimitDuration: newAccount.rateLimitDuration || 60
     }

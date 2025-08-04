@@ -18,7 +18,7 @@ class UnifiedClaudeScheduler {
         if (apiKeyData.claudeAccountId.startsWith('group:')) {
           const groupId = apiKeyData.claudeAccountId.replace('group:', '');
           logger.info(`🎯 API key ${apiKeyData.name} is bound to group ${groupId}, selecting from group`);
-          return await this.selectAccountFromGroup(groupId, sessionHash, requestedModel, apiKeyData);
+          return await this.selectAccountFromGroup(groupId, sessionHash, requestedModel);
         }
         
         // 普通专属账户
@@ -370,7 +370,7 @@ class UnifiedClaudeScheduler {
   }
 
   // 👥 从分组中选择账户
-  async selectAccountFromGroup(groupId, sessionHash = null, requestedModel = null, apiKeyData = null) {
+  async selectAccountFromGroup(groupId, sessionHash = null, requestedModel = null) {
     try {
       // 获取分组信息
       const group = await accountGroupService.getGroup(groupId);
@@ -426,7 +426,7 @@ class UnifiedClaudeScheduler {
           }
         } else if (group.platform === 'gemini') {
           // Gemini暂时不支持，预留接口
-          logger.warn(`⚠️ Gemini group scheduling not yet implemented`);
+          logger.warn('⚠️ Gemini group scheduling not yet implemented');
           continue;
         }
 

@@ -1423,13 +1423,29 @@ router.get('/gemini-accounts', authenticateAdmin, async (req, res) => {
   try {
     const accounts = await geminiAccountService.getAllAccounts();
     
-    // 为Gemini账户添加空的使用统计（暂时）
-    const accountsWithStats = accounts.map(account => ({
-      ...account,
-      usage: {
-        daily: { tokens: 0, requests: 0, allTokens: 0 },
-        total: { tokens: 0, requests: 0, allTokens: 0 },
-        averages: { rpm: 0, tpm: 0 }
+    // 为每个账户添加使用统计信息（与Claude账户相同的逻辑）
+    const accountsWithStats = await Promise.all(accounts.map(async (account) => {
+      try {
+        const usageStats = await redis.getAccountUsageStats(account.id);
+        return {
+          ...account,
+          usage: {
+            daily: usageStats.daily,
+            total: usageStats.total,
+            averages: usageStats.averages
+          }
+        };
+      } catch (statsError) {
+        logger.warn(`⚠️ Failed to get usage stats for Gemini account ${account.id}:`, statsError.message);
+        // 如果获取统计失败，返回空统计
+        return {
+          ...account,
+          usage: {
+            daily: { tokens: 0, requests: 0, allTokens: 0 },
+            total: { tokens: 0, requests: 0, allTokens: 0 },
+            averages: { rpm: 0, tpm: 0 }
+          }
+        };
       }
     }));
     
@@ -1518,6 +1534,30 @@ router.post('/gemini-accounts/:accountId/refresh', authenticateAdmin, async (req
   } catch (error) {
     logger.error('❌ Failed to refresh Gemini account token:', error);
     res.status(500).json({ error: 'Failed to refresh token', message: error.message });
+  }
+});
+
+// 切换 Gemini 账户调度状态
+router.put('/gemini-accounts/:accountId/toggle-schedulable', authenticateAdmin, async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    
+    const account = await geminiAccountService.getAccount(accountId);
+    if (!account) {
+      return res.status(404).json({ error: 'Account not found' });
+    }
+    
+    // 将字符串 'true'/'false' 转换为布尔值，然后取反
+    const currentSchedulable = account.schedulable === 'true';
+    const newSchedulable = !currentSchedulable;
+    
+    await geminiAccountService.updateAccount(accountId, { schedulable: String(newSchedulable) });
+    
+    logger.success(`🔄 Admin toggled Gemini account schedulable status: ${accountId} -> ${newSchedulable ? 'schedulable' : 'not schedulable'}`);
+    res.json({ success: true, schedulable: newSchedulable });
+  } catch (error) {
+    logger.error('❌ Failed to toggle Gemini account schedulable status:', error);
+    res.status(500).json({ error: 'Failed to toggle schedulable status', message: error.message });
   }
 });
 

@@ -24,8 +24,28 @@ jobs:
     - name: Check if version bump is needed
       id: check
       run: |
-        # 获取当前提交的文件变更
-        CHANGED_FILES=$(git diff --name-only HEAD~1..HEAD 2>/dev/null || git diff --name-only $(git rev-list --max-parents=0 HEAD)..HEAD)
+        # 检测是否是合并提交
+        PARENT_COUNT=$(git rev-list --parents -n 1 HEAD | wc -w)
+        PARENT_COUNT=$((PARENT_COUNT - 1))
+        echo "Parent count: $PARENT_COUNT"
+        
+        if [ "$PARENT_COUNT" -gt 1 ]; then
+          # 合并提交：获取合并进来的所有文件变更
+          echo "Detected merge commit, getting all merged changes"
+          # 获取合并基准点
+          MERGE_BASE=$(git merge-base HEAD^1 HEAD^2 2>/dev/null || echo "")
+          if [ -n "$MERGE_BASE" ]; then
+            # 获取从合并基准到 HEAD 的所有变更
+            CHANGED_FILES=$(git diff --name-only $MERGE_BASE..HEAD)
+          else
+            # 如果无法获取合并基准，使用第二个父提交
+            CHANGED_FILES=$(git diff --name-only HEAD^2..HEAD)
+          fi
+        else
+          # 普通提交：获取相对于上一个提交的变更
+          CHANGED_FILES=$(git diff --name-only HEAD~1..HEAD 2>/dev/null || git diff --name-only $(git rev-list --max-parents=0 HEAD)..HEAD)
+        fi
+        
         echo "Changed files:"
         echo "$CHANGED_FILES"
         

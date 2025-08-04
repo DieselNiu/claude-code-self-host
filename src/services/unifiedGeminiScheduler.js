@@ -95,6 +95,19 @@ class UnifiedGeminiScheduler {
       if (boundAccount && boundAccount.isActive === 'true' && boundAccount.status !== 'error') {
         const isRateLimited = await this.isAccountRateLimited(boundAccount.id);
         if (!isRateLimited) {
+          // 检查模型支持
+          if (requestedModel && boundAccount.supportedModels && boundAccount.supportedModels.length > 0) {
+            // 处理可能带有 models/ 前缀的模型名
+            const normalizedModel = requestedModel.replace('models/', '');
+            const modelSupported = boundAccount.supportedModels.some(model => 
+              model.replace('models/', '') === normalizedModel
+            );
+            if (!modelSupported) {
+              logger.warn(`⚠️ Bound Gemini account ${boundAccount.name} does not support model ${requestedModel}`);
+              return availableAccounts;
+            }
+          }
+          
           logger.info(`🎯 Using bound dedicated Gemini account: ${boundAccount.name} (${apiKeyData.geminiAccountId})`);
           return [{
             ...boundAccount,
@@ -122,6 +135,19 @@ class UnifiedGeminiScheduler {
         if (isExpired && !account.refreshToken) {
           logger.warn(`⚠️ Gemini account ${account.name} token expired and no refresh token available`);
           continue;
+        }
+        
+        // 检查模型支持
+        if (requestedModel && account.supportedModels && account.supportedModels.length > 0) {
+          // 处理可能带有 models/ 前缀的模型名
+          const normalizedModel = requestedModel.replace('models/', '');
+          const modelSupported = account.supportedModels.some(model => 
+            model.replace('models/', '') === normalizedModel
+          );
+          if (!modelSupported) {
+            logger.debug(`⏭️ Skipping Gemini account ${account.name} - doesn't support model ${requestedModel}`);
+            continue;
+          }
         }
         
         // 检查是否被限流
@@ -269,7 +295,7 @@ class UnifiedGeminiScheduler {
   }
 
   // 👥 从分组中选择账户
-  async selectAccountFromGroup(groupId, sessionHash = null, requestedModel = null, apiKeyData = null) {
+  async selectAccountFromGroup(groupId, sessionHash = null, requestedModel = null) {
     try {
       // 获取分组信息
       const group = await accountGroupService.getGroup(groupId);
@@ -330,6 +356,19 @@ class UnifiedGeminiScheduler {
             continue;
           }
 
+          // 检查模型支持
+          if (requestedModel && account.supportedModels && account.supportedModels.length > 0) {
+            // 处理可能带有 models/ 前缀的模型名
+            const normalizedModel = requestedModel.replace('models/', '');
+            const modelSupported = account.supportedModels.some(model => 
+              model.replace('models/', '') === normalizedModel
+            );
+            if (!modelSupported) {
+              logger.debug(`⏭️ Skipping Gemini account ${account.name} in group - doesn't support model ${requestedModel}`);
+              continue;
+            }
+          }
+          
           // 检查是否被限流
           const isRateLimited = await this.isAccountRateLimited(account.id);
           if (!isRateLimited) {
