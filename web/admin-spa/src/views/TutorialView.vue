@@ -1132,7 +1132,42 @@ const tutorialSystems = [
 
 // 当前基础URL
 const currentBaseUrl = computed(() => {
-  return window.location.origin
+  // 更健壮的获取 origin 的方法，兼容旧版浏览器和特殊环境
+  let origin = ''
+  
+  if (window.location.origin) {
+    // 现代浏览器直接支持 origin
+    origin = window.location.origin
+  } else {
+    // 旧版浏览器或特殊环境的兼容处理
+    const protocol = window.location.protocol
+    const hostname = window.location.hostname
+    const port = window.location.port
+    
+    origin = protocol + '//' + hostname
+    
+    // 只有在非默认端口时才添加端口号
+    if (port && 
+        ((protocol === 'http:' && port !== '80') || 
+         (protocol === 'https:' && port !== '443'))) {
+      origin += ':' + port
+    }
+  }
+  
+  // 如果还是获取不到，使用当前页面的 URL 推导
+  if (!origin) {
+    const currentUrl = window.location.href
+    const pathStart = currentUrl.indexOf('/', 8) // 跳过 http:// 或 https://
+    if (pathStart !== -1) {
+      origin = currentUrl.substring(0, pathStart)
+    } else {
+      // 最后的降级方案，使用相对路径
+      console.warn('无法获取完整的 origin，将使用相对路径')
+      return '/api'
+    }
+  }
+  
+  return origin + '/api'
 })
 </script>
 

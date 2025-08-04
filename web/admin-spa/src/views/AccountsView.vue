@@ -535,10 +535,10 @@
                 今日使用
               </p>
               <p class="text-sm font-semibold text-gray-900">
-                {{ formatNumber(account.usage?.dailyRequests || 0) }} 次
+                {{ formatNumber(account.usage?.daily?.requests || 0) }} 次
               </p>
               <p class="text-xs text-gray-500 mt-0.5">
-                {{ formatNumber(account.usage?.dailyTokens || 0) }} tokens
+                {{ formatNumber(account.usage?.daily?.allTokens || 0) }} tokens
               </p>
             </div>
             <div>
@@ -546,10 +546,10 @@
                 总使用量
               </p>
               <p class="text-sm font-semibold text-gray-900">
-                {{ formatNumber(account.usage?.totalRequests || 0) }} 次
+                {{ formatNumber(account.usage?.total?.requests || 0) }} 次
               </p>
               <p class="text-xs text-gray-500 mt-0.5">
-                {{ formatNumber(account.usage?.totalTokens || 0) }} tokens
+                {{ formatNumber(account.usage?.total?.allTokens || 0) }} tokens
               </p>
             </div>
           </div>
@@ -558,25 +558,37 @@
           <div class="space-y-2 mb-3">
             <!-- 会话窗口 -->
             <div
-              v-if="account.sessionWindow"
-              class="flex items-center justify-between text-xs"
+              v-if="account.platform === 'claude' && account.sessionWindow && account.sessionWindow.hasActiveWindow"
+              class="bg-gray-50 rounded-lg p-2 space-y-1.5"
             >
-              <span class="text-gray-500">会话窗口</span>
-              <div class="flex items-center gap-2">
-                <span
-                  :class="[
-                    'font-medium',
-                    account.sessionWindow.remaining <= 20 ? 'text-orange-600' : 'text-gray-900'
-                  ]"
-                >
-                  {{ account.sessionWindow.remaining || 0 }} / {{ account.sessionWindow.total || 0 }}
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-gray-600 font-medium">会话窗口</span>
+                <span class="text-gray-700 font-medium">
+                  {{ account.sessionWindow.progress }}%
                 </span>
-                <div class="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    class="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
-                    :style="{ width: `${getSessionWindowPercentage(account)}%` }"
-                  />
-                </div>
+              </div>
+              <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300"
+                  :style="{ width: account.sessionWindow.progress + '%' }"
+                />
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-gray-500">
+                  {{ formatSessionWindow(account.sessionWindow.windowStart, account.sessionWindow.windowEnd) }}
+                </span>
+                <span
+                  v-if="account.sessionWindow.remainingTime > 0"
+                  class="text-indigo-600 font-medium"
+                >
+                  剩余 {{ formatRemainingTime(account.sessionWindow.remainingTime) }}
+                </span>
+                <span
+                  v-else
+                  class="text-gray-500"
+                >
+                  已结束
+                </span>
               </div>
             </div>
             

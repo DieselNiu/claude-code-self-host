@@ -311,6 +311,28 @@ export const useDashboardStore = defineStore('dashboard', () => {
           url += `&startDate=${encodeURIComponent(startTime.toISOString())}`
           url += `&endDate=${encodeURIComponent(endTime.toISOString())}`
         }
+      } else if (dateFilter.value.type === 'preset' && trendGranularity.value === 'day') {
+        // 天粒度的预设时间范围，需要传递startDate和endDate参数
+        const now = new Date()
+        let startDate, endDate
+        
+        const option = dateFilter.value.presetOptions.find(opt => opt.value === dateFilter.value.preset)
+        if (option) {
+          if (dateFilter.value.preset === 'today') {
+            // 今日：从系统时区的今天0点到23:59
+            startDate = getSystemTimezoneDay(now, true)
+            endDate = getSystemTimezoneDay(now, false)
+          } else {
+            // 7天或30天：从N天前的0点到今天的23:59
+            const daysAgo = new Date()
+            daysAgo.setDate(daysAgo.getDate() - (option.days - 1))
+            startDate = getSystemTimezoneDay(daysAgo, true)
+            endDate = getSystemTimezoneDay(now, false)
+          }
+          
+          url += `&startDate=${encodeURIComponent(startDate.toISOString())}`
+          url += `&endDate=${encodeURIComponent(endDate.toISOString())}`
+        }
       }
       
       const response = await apiClient.get(url)

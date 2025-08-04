@@ -1533,7 +1533,7 @@ const deleteApiKey = async (keyId) => {
 const copyApiStatsLink = (apiKey) => {
   // 构建统计页面的完整URL
   const baseUrl = window.location.origin
-  const statsUrl = `${baseUrl}/admin/api-stats?apiId=${apiKey.id}`
+  const statsUrl = `${baseUrl}/admin-next/api-stats?apiId=${apiKey.id}`
   
   // 使用传统的textarea方法复制到剪贴板
   const textarea = document.createElement('textarea')
