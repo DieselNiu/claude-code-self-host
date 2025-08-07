@@ -14,6 +14,7 @@ const config = require('../config/config');
 const redis = require('../src/models/redis');
 const apiKeyService = require('../src/services/apiKeyService');
 const claudeAccountService = require('../src/services/claudeAccountService');
+const bedrockAccountService = require('../src/services/bedrockAccountService');
 
 const program = new Command();
 
@@ -137,6 +138,50 @@ program
     await redis.disconnect();
   });
 
+// ☁️ Bedrock 账户管理
+program
+  .command('bedrock')
+  .description('Bedrock 账户管理操作')
+  .action(async () => {
+    await initialize();
+    
+    const { action } = await inquirer.prompt([{
+      type: 'list',
+      name: 'action',
+      message: '请选择操作:',
+      choices: [
+        { name: '📋 查看所有 Bedrock 账户', value: 'list' },
+        { name: '➕ 创建 Bedrock 账户', value: 'create' },
+        { name: '✏️  编辑 Bedrock 账户', value: 'edit' },
+        { name: '🔄 切换账户状态', value: 'toggle' },
+        { name: '🧪 测试账户连接', value: 'test' },
+        { name: '🗑️  删除账户', value: 'delete' }
+      ]
+    }]);
+    
+    switch (action) {
+      case 'list':
+        await listBedrockAccounts();
+        break;
+      case 'create':
+        await createBedrockAccount();
+        break;
+      case 'edit':
+        await editBedrockAccount();
+        break;
+      case 'toggle':
+        await toggleBedrockAccount();
+        break;
+      case 'test':
+        await testBedrockAccount();
+        break;
+      case 'delete':
+        await deleteBedrockAccount();
+        break;
+    }
+    
+    await redis.disconnect();
+  });
 
 // 实现具体功能函数
 
@@ -597,6 +642,355 @@ async function listClaudeAccounts() {
   }
 }
 
+// ☁️ Bedrock 账户管理函数
+
+async function listBedrockAccounts() {
+  const spinner = ora('正在获取 Bedrock 账户...').start();
+  
+  try {
+    const result = await bedrockAccountService.getAllAccounts();
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+    
+    const accounts = result.data;
+    spinner.succeed(`找到 ${accounts.length} 个 Bedrock 账户`);
+
+    if (accounts.length === 0) {
+      console.log(styles.warning('没有找到任何 Bedrock 账户'));
+      return;
+    }
+
+    const tableData = [
+      ['ID', '名称', '区域', '模型', '状态', '凭证类型', '创建时间']
+    ];
+
+    accounts.forEach(account => {
+      tableData.push([
+        account.id.substring(0, 8) + '...',
+        account.name,
+        account.region,
+        account.defaultModel?.split('.').pop() || 'default',
+        account.isActive ? (account.schedulable ? '🟢 活跃' : '🟡 不可调度') : '🔴 停用',
+        account.credentialType,
+        account.createdAt ? new Date(account.createdAt).toLocaleDateString() : '-'
+      ]);
+    });
+
+    console.log('\n☁️ Bedrock 账户列表:\n');
+    console.log(table(tableData));
+
+  } catch (error) {
+    spinner.fail('获取 Bedrock 账户失败');
+    console.error(styles.error(error.message));
+  }
+}
+
+async function createBedrockAccount() {
+  console.log(styles.title('\n➕ 创建 Bedrock 账户\n'));
+  
+  const questions = [
+    {
+      type: 'input',
+      name: 'name',
+      message: '账户名称:',
+      validate: input => input.trim() !== ''
+    },
+    {
+      type: 'input',
+      name: 'description',
+      message: '描述 (可选):'
+    },
+    {
+      type: 'list',
+      name: 'region',
+      message: '选择 AWS 区域:',
+      choices: [
+        { name: 'us-east-1 (北弗吉尼亚)', value: 'us-east-1' },
+        { name: 'us-west-2 (俄勒冈)', value: 'us-west-2' },
+        { name: 'eu-west-1 (爱尔兰)', value: 'eu-west-1' },
+        { name: 'ap-southeast-1 (新加坡)', value: 'ap-southeast-1' }
+      ]
+    },
+    {
+      type: 'list',
+      name: 'credentialType',
+      message: '凭证类型:',
+      choices: [
+        { name: '默认凭证链 (环境变量/AWS配置)', value: 'default' },
+        { name: '访问密钥 (Access Key)', value: 'access_key' },
+        { name: 'Bearer Token (API Key)', value: 'bearer_token' }
+      ]
+    }
+  ];
+  
+  // 根据凭证类型添加额外问题
+  const answers = await inquirer.prompt(questions);
+  
+  if (answers.credentialType === 'access_key') {
+    const credQuestions = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'accessKeyId',
+        message: 'AWS Access Key ID:',
+        validate: input => input.trim() !== ''
+      },
+      {
+        type: 'password',
+        name: 'secretAccessKey',
+        message: 'AWS Secret Access Key:',
+        validate: input => input.trim() !== ''
+      },
+      {
+        type: 'input',
+        name: 'sessionToken',
+        message: 'Session Token (可选，用于临时凭证):'
+      }
+    ]);
+    
+    answers.awsCredentials = {
+      accessKeyId: credQuestions.accessKeyId,
+      secretAccessKey: credQuestions.secretAccessKey
+    };
+    
+    if (credQuestions.sessionToken) {
+      answers.awsCredentials.sessionToken = credQuestions.sessionToken;
+    }
+  }
+  
+  const spinner = ora('正在创建 Bedrock 账户...').start();
+  
+  try {
+    const result = await bedrockAccountService.createAccount(answers);
+    
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+    
+    spinner.succeed('Bedrock 账户创建成功');
+    console.log(styles.success(`账户 ID: ${result.data.id}`));
+    console.log(styles.info(`名称: ${result.data.name}`));
+    console.log(styles.info(`区域: ${result.data.region}`));
+    
+  } catch (error) {
+    spinner.fail('创建 Bedrock 账户失败');
+    console.error(styles.error(error.message));
+  }
+}
+
+async function testBedrockAccount() {
+  const spinner = ora('正在获取 Bedrock 账户...').start();
+  
+  try {
+    const result = await bedrockAccountService.getAllAccounts();
+    if (!result.success || result.data.length === 0) {
+      spinner.fail('没有可测试的 Bedrock 账户');
+      return;
+    }
+    
+    spinner.succeed('账户列表获取成功');
+    
+    const choices = result.data.map(account => ({
+      name: `${account.name} (${account.region})`,
+      value: account.id
+    }));
+    
+    const { accountId } = await inquirer.prompt([{
+      type: 'list',
+      name: 'accountId',
+      message: '选择要测试的账户:',
+      choices
+    }]);
+    
+    const testSpinner = ora('正在测试账户连接...').start();
+    
+    const testResult = await bedrockAccountService.testAccount(accountId);
+    
+    if (testResult.success) {
+      testSpinner.succeed('账户连接测试成功');
+      console.log(styles.success(`状态: ${testResult.data.status}`));
+      console.log(styles.info(`区域: ${testResult.data.region}`));
+      console.log(styles.info(`可用模型数量: ${testResult.data.modelsCount || 'N/A'}`));
+    } else {
+      testSpinner.fail('账户连接测试失败');
+      console.error(styles.error(testResult.error));
+    }
+    
+  } catch (error) {
+    spinner.fail('测试过程中发生错误');
+    console.error(styles.error(error.message));
+  }
+}
+
+async function toggleBedrockAccount() {
+  const spinner = ora('正在获取 Bedrock 账户...').start();
+  
+  try {
+    const result = await bedrockAccountService.getAllAccounts();
+    if (!result.success || result.data.length === 0) {
+      spinner.fail('没有可操作的 Bedrock 账户');
+      return;
+    }
+    
+    spinner.succeed('账户列表获取成功');
+    
+    const choices = result.data.map(account => ({
+      name: `${account.name} (${account.isActive ? '🟢 活跃' : '🔴 停用'})`,
+      value: account.id
+    }));
+    
+    const { accountId } = await inquirer.prompt([{
+      type: 'list',
+      name: 'accountId',
+      message: '选择要切换状态的账户:',
+      choices
+    }]);
+    
+    const toggleSpinner = ora('正在切换账户状态...').start();
+    
+    // 获取当前状态
+    const accountResult = await bedrockAccountService.getAccount(accountId);
+    if (!accountResult.success) {
+      throw new Error('无法获取账户信息');
+    }
+    
+    const newStatus = !accountResult.data.isActive;
+    const updateResult = await bedrockAccountService.updateAccount(accountId, { isActive: newStatus });
+    
+    if (updateResult.success) {
+      toggleSpinner.succeed('账户状态切换成功');
+      console.log(styles.success(`新状态: ${newStatus ? '🟢 活跃' : '🔴 停用'}`));
+    } else {
+      throw new Error(updateResult.error);
+    }
+    
+  } catch (error) {
+    spinner.fail('切换账户状态失败');
+    console.error(styles.error(error.message));
+  }
+}
+
+async function editBedrockAccount() {
+  const spinner = ora('正在获取 Bedrock 账户...').start();
+  
+  try {
+    const result = await bedrockAccountService.getAllAccounts();
+    if (!result.success || result.data.length === 0) {
+      spinner.fail('没有可编辑的 Bedrock 账户');
+      return;
+    }
+    
+    spinner.succeed('账户列表获取成功');
+    
+    const choices = result.data.map(account => ({
+      name: `${account.name} (${account.region})`,
+      value: account.id
+    }));
+    
+    const { accountId } = await inquirer.prompt([{
+      type: 'list',
+      name: 'accountId',
+      message: '选择要编辑的账户:',
+      choices
+    }]);
+    
+    const accountResult = await bedrockAccountService.getAccount(accountId);
+    if (!accountResult.success) {
+      throw new Error('无法获取账户信息');
+    }
+    
+    const account = accountResult.data;
+    
+    const updates = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'name',
+        message: '账户名称:',
+        default: account.name
+      },
+      {
+        type: 'input',
+        name: 'description',
+        message: '描述:',
+        default: account.description
+      },
+      {
+        type: 'number',
+        name: 'priority',
+        message: '优先级 (1-100):',
+        default: account.priority,
+        validate: input => input >= 1 && input <= 100
+      }
+    ]);
+    
+    const updateSpinner = ora('正在更新账户...').start();
+    
+    const updateResult = await bedrockAccountService.updateAccount(accountId, updates);
+    
+    if (updateResult.success) {
+      updateSpinner.succeed('账户更新成功');
+    } else {
+      throw new Error(updateResult.error);
+    }
+    
+  } catch (error) {
+    spinner.fail('编辑账户失败');
+    console.error(styles.error(error.message));
+  }
+}
+
+async function deleteBedrockAccount() {
+  const spinner = ora('正在获取 Bedrock 账户...').start();
+  
+  try {
+    const result = await bedrockAccountService.getAllAccounts();
+    if (!result.success || result.data.length === 0) {
+      spinner.fail('没有可删除的 Bedrock 账户');
+      return;
+    }
+    
+    spinner.succeed('账户列表获取成功');
+    
+    const choices = result.data.map(account => ({
+      name: `${account.name} (${account.region})`,
+      value: { id: account.id, name: account.name }
+    }));
+    
+    const { account } = await inquirer.prompt([{
+      type: 'list',
+      name: 'account',
+      message: '选择要删除的账户:',
+      choices
+    }]);
+    
+    const { confirm } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'confirm',
+      message: `确定要删除账户 "${account.name}" 吗？此操作无法撤销！`,
+      default: false
+    }]);
+    
+    if (!confirm) {
+      console.log(styles.info('已取消删除'));
+      return;
+    }
+    
+    const deleteSpinner = ora('正在删除账户...').start();
+    
+    const deleteResult = await bedrockAccountService.deleteAccount(account.id);
+    
+    if (deleteResult.success) {
+      deleteSpinner.succeed('账户删除成功');
+    } else {
+      throw new Error(deleteResult.error);
+    }
+    
+  } catch (error) {
+    spinner.fail('删除账户失败');
+    console.error(styles.error(error.message));
+  }
+}
+
 // 程序信息
 program
   .name('claude-relay-cli')
@@ -612,6 +1006,7 @@ if (!process.argv.slice(2).length) {
   console.log('使用以下命令管理服务:\n');
   console.log('  claude-relay-cli admin         - 创建初始管理员账户');
   console.log('  claude-relay-cli keys          - API Key 管理（查看/修改过期时间/续期/删除）');
+  console.log('  claude-relay-cli bedrock       - Bedrock 账户管理（创建/查看/编辑/测试/删除）');
   console.log('  claude-relay-cli status        - 查看系统状态');
   console.log('\n使用 --help 查看详细帮助信息');
 }

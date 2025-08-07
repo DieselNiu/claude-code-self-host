@@ -1,6 +1,8 @@
 const express = require('express');
 const claudeRelayService = require('../services/claudeRelayService');
 const claudeConsoleRelayService = require('../services/claudeConsoleRelayService');
+const bedrockRelayService = require('../services/bedrockRelayService');
+const bedrockAccountService = require('../services/bedrockAccountService');
 const unifiedClaudeScheduler = require('../services/unifiedClaudeScheduler');
 const apiKeyService = require('../services/apiKeyService');
 const { authenticateApiKey } = require('../middleware/auth');
@@ -101,7 +103,7 @@ async function handleMessagesRequest(req, res) {
           logger.warn('⚠️ Usage callback triggered but data is incomplete:', JSON.stringify(usageData));
         }
         });
-      } else {
+      } else if (accountType === 'claude-console') {
         // Claude Console账号使用Console转发服务（需要传递accountId）
         await claudeConsoleRelayService.relayStreamRequestWithUsageCapture(req.body, req.apiKey, res, req.headers, (usageData) => {
           // 回调函数：当检测到完整usage数据时记录真实token使用量
@@ -135,6 +137,44 @@ async function handleMessagesRequest(req, res) {
             logger.warn('⚠️ Usage callback triggered but data is incomplete:', JSON.stringify(usageData));
           }
         }, accountId);
+      } else if (accountType === 'bedrock') {
+        // Bedrock账号使用Bedrock转发服务
+        try {
+          const bedrockAccountResult = await bedrockAccountService.getAccount(accountId);
+          if (!bedrockAccountResult.success) {
+            throw new Error('Failed to get Bedrock account details');
+          }
+
+          const result = await bedrockRelayService.handleStreamRequest(req.body, bedrockAccountResult.data, res);
+          
+          // 记录Bedrock使用统计
+          if (result.usage) {
+            const inputTokens = result.usage.input_tokens || 0;
+            const outputTokens = result.usage.output_tokens || 0;
+            
+            apiKeyService.recordUsage(req.apiKey.id, inputTokens, outputTokens, 0, 0, result.model, accountId).catch(error => {
+              logger.error('❌ Failed to record Bedrock stream usage:', error);
+            });
+            
+            // 更新时间窗口内的token计数
+            if (req.rateLimitInfo) {
+              const totalTokens = inputTokens + outputTokens;
+              redis.getClient().incrby(req.rateLimitInfo.tokenCountKey, totalTokens).catch(error => {
+                logger.error('❌ Failed to update rate limit token count:', error);
+              });
+              logger.api(`📊 Updated rate limit token count: +${totalTokens} tokens`);
+            }
+            
+            usageDataCaptured = true;
+            logger.api(`📊 Bedrock stream usage recorded - Model: ${result.model}, Input: ${inputTokens}, Output: ${outputTokens}, Total: ${inputTokens + outputTokens} tokens`);
+          }
+        } catch (error) {
+          logger.error('❌ Bedrock stream request failed:', error);
+          if (!res.headersSent) {
+            res.status(500).json({ error: 'Bedrock service error', message: error.message });
+          }
+          return;
+        }
       }
       
       // 流式请求完成后 - 如果没有捕获到usage数据，记录警告但不进行估算
@@ -166,10 +206,43 @@ async function handleMessagesRequest(req, res) {
       if (accountType === 'claude-official') {
         // 官方Claude账号使用原有的转发服务
         response = await claudeRelayService.relayRequest(req.body, req.apiKey, req, res, req.headers);
-      } else {
+      } else if (accountType === 'claude-console') {
         // Claude Console账号使用Console转发服务
         logger.debug(`[DEBUG] Calling claudeConsoleRelayService.relayRequest with accountId: ${accountId}`);
         response = await claudeConsoleRelayService.relayRequest(req.body, req.apiKey, req, res, req.headers, accountId);
+      } else if (accountType === 'bedrock') {
+        // Bedrock账号使用Bedrock转发服务
+        try {
+          const bedrockAccountResult = await bedrockAccountService.getAccount(accountId);
+          if (!bedrockAccountResult.success) {
+            throw new Error('Failed to get Bedrock account details');
+          }
+
+          const result = await bedrockRelayService.handleNonStreamRequest(req.body, bedrockAccountResult.data, req.headers);
+          
+          // 构建标准响应格式
+          response = {
+            statusCode: result.success ? 200 : 500,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(result.success ? result.data : { error: result.error }),
+            accountId: accountId
+          };
+          
+          // 如果成功，添加使用统计到响应数据中
+          if (result.success && result.usage) {
+            const responseData = JSON.parse(response.body);
+            responseData.usage = result.usage;
+            response.body = JSON.stringify(responseData);
+          }
+        } catch (error) {
+          logger.error('❌ Bedrock non-stream request failed:', error);
+          response = {
+            statusCode: 500,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ error: 'Bedrock service error', message: error.message }),
+            accountId: accountId
+          };
+        }
       }
       
       logger.info('📡 Claude API response received', {
@@ -180,9 +253,10 @@ async function handleMessagesRequest(req, res) {
       
       res.status(response.statusCode);
       
-      // 设置响应头
+      // 设置响应头，避免 Content-Length 和 Transfer-Encoding 冲突
+      const skipHeaders = ['content-encoding', 'transfer-encoding', 'content-length'];
       Object.keys(response.headers).forEach(key => {
-        if (key.toLowerCase() !== 'content-encoding') {
+        if (!skipHeaders.includes(key.toLowerCase())) {
           res.setHeader(key, response.headers[key]);
         }
       });
@@ -282,6 +356,51 @@ router.post('/v1/messages', authenticateApiKey, handleMessagesRequest);
 // 🚀 Claude API messages 端点 - /claude/v1/messages (别名)
 router.post('/claude/v1/messages', authenticateApiKey, handleMessagesRequest);
 
+// 📋 模型列表端点 - Claude Code 客户端需要
+router.get('/v1/models', authenticateApiKey, async (req, res) => {
+  try {
+    // 返回支持的模型列表
+    const models = [
+      {
+        id: 'claude-3-5-sonnet-20241022',
+        object: 'model',
+        created: 1669599635,
+        owned_by: 'anthropic'
+      },
+      {
+        id: 'claude-3-5-haiku-20241022', 
+        object: 'model',
+        created: 1669599635,
+        owned_by: 'anthropic'
+      },
+      {
+        id: 'claude-3-opus-20240229',
+        object: 'model', 
+        created: 1669599635,
+        owned_by: 'anthropic'
+      },
+      {
+        id: 'claude-sonnet-4-20250514',
+        object: 'model',
+        created: 1669599635, 
+        owned_by: 'anthropic'
+      }
+    ];
+    
+    res.json({
+      object: 'list',
+      data: models
+    });
+    
+  } catch (error) {
+    logger.error('❌ Models list error:', error);
+    res.status(500).json({
+      error: 'Failed to get models list',
+      message: error.message
+    });
+  }
+});
+
 // 🏥 健康检查端点
 router.get('/health', async (req, res) => {
   try {
@@ -344,6 +463,48 @@ router.get('/v1/usage', authenticateApiKey, async (req, res) => {
     logger.error('❌ Usage stats error:', error);
     res.status(500).json({
       error: 'Failed to get usage stats',
+      message: error.message
+    });
+  }
+});
+
+// 👤 用户信息端点 - Claude Code 客户端需要
+router.get('/v1/me', authenticateApiKey, async (req, res) => {
+  try {
+    // 返回基础用户信息
+    res.json({
+      id: 'user_' + req.apiKey.id,
+      type: 'user', 
+      display_name: req.apiKey.name || 'API User',
+      created_at: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('❌ User info error:', error);
+    res.status(500).json({
+      error: 'Failed to get user info',
+      message: error.message
+    });
+  }
+});
+
+// 💰 余额/限制端点 - Claude Code 客户端需要
+router.get('/v1/organizations/:org_id/usage', authenticateApiKey, async (req, res) => {
+  try {
+    const usage = await apiKeyService.getUsageStats(req.apiKey.id);
+    
+    res.json({
+      object: 'usage',
+      data: [
+        {
+          type: 'credit_balance', 
+          credit_balance: req.apiKey.tokenLimit - (usage.totalTokens || 0)
+        }
+      ]
+    });
+  } catch (error) {
+    logger.error('❌ Organization usage error:', error);
+    res.status(500).json({
+      error: 'Failed to get usage info',
       message: error.message
     });
   }

@@ -878,9 +878,13 @@ const createApiKey = async () => {
       if (form.claudeAccountId.startsWith('console:')) {
         // Claude Console账户
         baseData.claudeConsoleAccountId = form.claudeAccountId.substring(8);
+        // 确保不会同时设置OAuth账号
+        delete baseData.claudeAccountId;
       } else {
-        // Claude OAuth账户
+        // Claude OAuth账户或分组
         baseData.claudeAccountId = form.claudeAccountId;
+        // 确保不会同时设置Console账号
+        delete baseData.claudeConsoleAccountId;
       }
     }
     

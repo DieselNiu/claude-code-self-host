@@ -68,7 +68,7 @@ class ClaudeConsoleRelayService {
       // 构建完整的API URL
       const cleanUrl = account.apiUrl.replace(/\/$/, ''); // 移除末尾斜杠
       const apiEndpoint = cleanUrl.endsWith('/v1/messages') 
-        ? cleanUrl 
+        ? cleanUrl
         : `${cleanUrl}/v1/messages`;
       
       logger.debug(`🎯 Final API endpoint: ${apiEndpoint}`);
@@ -86,7 +86,6 @@ class ClaudeConsoleRelayService {
         data: modifiedRequestBody,
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': account.apiKey,
           'anthropic-version': '2023-06-01',
           'User-Agent': account.userAgent || this.defaultUserAgent,
           ...filteredHeaders
@@ -97,6 +96,17 @@ class ClaudeConsoleRelayService {
         validateStatus: () => true // 接受所有状态码
       };
 
+      // 根据 API Key 格式选择认证方式
+      if (account.apiKey && account.apiKey.startsWith('sk-ant-')) {
+        // Anthropic 官方 API Key 使用 x-api-key
+        requestConfig.headers['x-api-key'] = account.apiKey;
+        logger.debug('[DEBUG] Using x-api-key authentication for sk-ant-* API key');
+      } else {
+        // 其他 API Key 使用 Authorization Bearer
+        requestConfig.headers['Authorization'] = `Bearer ${account.apiKey}`;
+        logger.debug('[DEBUG] Using Authorization Bearer authentication');
+      }
+      
       logger.debug(`[DEBUG] Initial headers before beta: ${JSON.stringify(requestConfig.headers, null, 2)}`);
       
       // 添加beta header如果需要
@@ -212,11 +222,15 @@ class ClaudeConsoleRelayService {
       // 构建完整的API URL
       const cleanUrl = account.apiUrl.replace(/\/$/, ''); // 移除末尾斜杠
       const apiEndpoint = cleanUrl.endsWith('/v1/messages') 
-        ? cleanUrl 
+        ? cleanUrl
         : `${cleanUrl}/v1/messages`;
       
       logger.debug(`🎯 Final API endpoint for stream: ${apiEndpoint}`);
 
+      // 过滤客户端请求头
+      const filteredHeaders = this._filterClientHeaders(clientHeaders);
+      logger.debug(`[DEBUG] Filtered client headers: ${JSON.stringify(filteredHeaders)}`);
+      
       // 准备请求配置
       const requestConfig = {
         method: 'POST',
@@ -224,16 +238,27 @@ class ClaudeConsoleRelayService {
         data: body,
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': account.apiKey,
           'anthropic-version': '2023-06-01',
           'User-Agent': account.userAgent || this.defaultUserAgent,
-          ...this._filterClientHeaders(clientHeaders)
+          ...filteredHeaders
         },
         httpsAgent: proxyAgent,
         timeout: config.proxy.timeout || 60000,
-        responseType: 'stream'
+        responseType: 'stream',
+        validateStatus: () => true // 接受所有状态码
       };
 
+      // 根据 API Key 格式选择认证方式
+      if (account.apiKey && account.apiKey.startsWith('sk-ant-')) {
+        // Anthropic 官方 API Key 使用 x-api-key
+        requestConfig.headers['x-api-key'] = account.apiKey;
+        logger.debug('[DEBUG] Using x-api-key authentication for sk-ant-* API key');
+      } else {
+        // 其他 API Key 使用 Authorization Bearer
+        requestConfig.headers['Authorization'] = `Bearer ${account.apiKey}`;
+        logger.debug('[DEBUG] Using Authorization Bearer authentication');
+      }
+      
       // 添加beta header如果需要
       if (requestOptions.betaHeader) {
         requestConfig.headers['anthropic-beta'] = requestOptions.betaHeader;
@@ -253,24 +278,31 @@ class ClaudeConsoleRelayService {
             claudeConsoleAccountService.markAccountRateLimited(accountId);
           }
 
-          // 收集错误数据
-          let errorData = '';
+          // 设置错误响应的状态码和响应头
+          if (!responseStream.headersSent) {
+            const errorHeaders = {
+              'Content-Type': response.headers['content-type'] || 'application/json',
+              'Cache-Control': 'no-cache',
+              'Connection': 'keep-alive'
+            };
+            // 避免 Transfer-Encoding 冲突，让 Express 自动处理
+            delete errorHeaders['Transfer-Encoding'];
+            delete errorHeaders['Content-Length'];
+            responseStream.writeHead(response.status, errorHeaders);
+          }
+
+          // 直接透传错误数据，不进行包装
           response.data.on('data', chunk => {
-            errorData += chunk.toString();
+            if (!responseStream.destroyed) {
+              responseStream.write(chunk);
+            }
           });
 
           response.data.on('end', () => {
             if (!responseStream.destroyed) {
-              responseStream.write('event: error\n');
-              responseStream.write(`data: ${JSON.stringify({ 
-                error: 'Claude Console API error',
-                status: response.status,
-                details: errorData,
-                timestamp: new Date().toISOString()
-              })}\n\n`);
               responseStream.end();
             }
-            reject(new Error(`Claude Console API error: ${response.status}`));
+            resolve(); // 不抛出异常，正常完成流处理
           });
           return;
         }
@@ -450,14 +482,17 @@ class ClaudeConsoleRelayService {
   // 🔧 过滤客户端请求头
   _filterClientHeaders(clientHeaders) {
     const sensitiveHeaders = [
-      'x-api-key',
+      'content-type',
+      'user-agent',
       'authorization',
+      'x-api-key',
       'host',
       'content-length',
       'connection',
       'proxy-authorization',
       'content-encoding',
-      'transfer-encoding'
+      'transfer-encoding',
+      'anthropic-version'
     ];
     
     const filteredHeaders = {};

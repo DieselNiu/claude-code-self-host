@@ -2,6 +2,7 @@ const express = require('express');
 const apiKeyService = require('../services/apiKeyService');
 const claudeAccountService = require('../services/claudeAccountService');
 const claudeConsoleAccountService = require('../services/claudeConsoleAccountService');
+const bedrockAccountService = require('../services/bedrockAccountService');
 const geminiAccountService = require('../services/geminiAccountService');
 const accountGroupService = require('../services/accountGroupService');
 const redis = require('../models/redis');
@@ -1358,6 +1359,227 @@ router.put('/claude-console-accounts/:accountId/toggle-schedulable', authenticat
   } catch (error) {
     logger.error('❌ Failed to toggle Claude Console account schedulable status:', error);
     res.status(500).json({ error: 'Failed to toggle schedulable status', message: error.message });
+  }
+});
+
+// ☁️ Bedrock 账户管理
+
+// 获取所有Bedrock账户
+router.get('/bedrock-accounts', authenticateAdmin, async (req, res) => {
+  try {
+    const result = await bedrockAccountService.getAllAccounts();
+    if (!result.success) {
+      return res.status(500).json({ error: 'Failed to get Bedrock accounts', message: result.error });
+    }
+    
+    // 为每个账户添加使用统计信息
+    const accountsWithStats = await Promise.all(result.data.map(async (account) => {
+      try {
+        const usageStats = await redis.getAccountUsageStats(account.id);
+        return {
+          ...account,
+          usage: {
+            daily: usageStats.daily,
+            total: usageStats.total,
+            averages: usageStats.averages
+          }
+        };
+      } catch (statsError) {
+        logger.warn(`⚠️ Failed to get usage stats for Bedrock account ${account.id}:`, statsError.message);
+        return {
+          ...account,
+          usage: {
+            daily: { tokens: 0, requests: 0, allTokens: 0 },
+            total: { tokens: 0, requests: 0, allTokens: 0 },
+            averages: { rpm: 0, tpm: 0 }
+          }
+        };
+      }
+    }));
+    
+    res.json({ success: true, data: accountsWithStats });
+  } catch (error) {
+    logger.error('❌ Failed to get Bedrock accounts:', error);
+    res.status(500).json({ error: 'Failed to get Bedrock accounts', message: error.message });
+  }
+});
+
+// 创建新的Bedrock账户
+router.post('/bedrock-accounts', authenticateAdmin, async (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      region,
+      awsCredentials,
+      defaultModel,
+      priority,
+      accountType,
+      credentialType
+    } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+
+    // 验证priority的有效性（1-100）
+    if (priority !== undefined && (priority < 1 || priority > 100)) {
+      return res.status(400).json({ error: 'Priority must be between 1 and 100' });
+    }
+
+    // 验证accountType的有效性
+    if (accountType && !['shared', 'dedicated'].includes(accountType)) {
+      return res.status(400).json({ error: 'Invalid account type. Must be "shared" or "dedicated"' });
+    }
+
+    // 验证credentialType的有效性
+    if (credentialType && !['default', 'access_key', 'bearer_token'].includes(credentialType)) {
+      return res.status(400).json({ error: 'Invalid credential type. Must be "default", "access_key", or "bearer_token"' });
+    }
+
+    const result = await bedrockAccountService.createAccount({
+      name,
+      description: description || '',
+      region: region || 'us-east-1',
+      awsCredentials,
+      defaultModel,
+      priority: priority || 50,
+      accountType: accountType || 'shared',
+      credentialType: credentialType || 'default'
+    });
+
+    if (!result.success) {
+      return res.status(500).json({ error: 'Failed to create Bedrock account', message: result.error });
+    }
+
+    logger.success(`☁️ Admin created Bedrock account: ${name}`);
+    res.json({ success: true, data: result.data });
+  } catch (error) {
+    logger.error('❌ Failed to create Bedrock account:', error);
+    res.status(500).json({ error: 'Failed to create Bedrock account', message: error.message });
+  }
+});
+
+// 更新Bedrock账户
+router.put('/bedrock-accounts/:accountId', authenticateAdmin, async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    const updates = req.body;
+
+    // 验证priority的有效性（1-100）
+    if (updates.priority !== undefined && (updates.priority < 1 || updates.priority > 100)) {
+      return res.status(400).json({ error: 'Priority must be between 1 and 100' });
+    }
+
+    // 验证accountType的有效性
+    if (updates.accountType && !['shared', 'dedicated'].includes(updates.accountType)) {
+      return res.status(400).json({ error: 'Invalid account type. Must be "shared" or "dedicated"' });
+    }
+
+    // 验证credentialType的有效性
+    if (updates.credentialType && !['default', 'access_key', 'bearer_token'].includes(updates.credentialType)) {
+      return res.status(400).json({ error: 'Invalid credential type. Must be "default", "access_key", or "bearer_token"' });
+    }
+
+    const result = await bedrockAccountService.updateAccount(accountId, updates);
+
+    if (!result.success) {
+      return res.status(500).json({ error: 'Failed to update Bedrock account', message: result.error });
+    }
+    
+    logger.success(`📝 Admin updated Bedrock account: ${accountId}`);
+    res.json({ success: true, message: 'Bedrock account updated successfully' });
+  } catch (error) {
+    logger.error('❌ Failed to update Bedrock account:', error);
+    res.status(500).json({ error: 'Failed to update Bedrock account', message: error.message });
+  }
+});
+
+// 删除Bedrock账户
+router.delete('/bedrock-accounts/:accountId', authenticateAdmin, async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    
+    const result = await bedrockAccountService.deleteAccount(accountId);
+
+    if (!result.success) {
+      return res.status(500).json({ error: 'Failed to delete Bedrock account', message: result.error });
+    }
+    
+    logger.success(`🗑️ Admin deleted Bedrock account: ${accountId}`);
+    res.json({ success: true, message: 'Bedrock account deleted successfully' });
+  } catch (error) {
+    logger.error('❌ Failed to delete Bedrock account:', error);
+    res.status(500).json({ error: 'Failed to delete Bedrock account', message: error.message });
+  }
+});
+
+// 切换Bedrock账户状态
+router.put('/bedrock-accounts/:accountId/toggle', authenticateAdmin, async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    
+    const accountResult = await bedrockAccountService.getAccount(accountId);
+    if (!accountResult.success) {
+      return res.status(404).json({ error: 'Account not found' });
+    }
+    
+    const newStatus = !accountResult.data.isActive;
+    const updateResult = await bedrockAccountService.updateAccount(accountId, { isActive: newStatus });
+
+    if (!updateResult.success) {
+      return res.status(500).json({ error: 'Failed to toggle account status', message: updateResult.error });
+    }
+    
+    logger.success(`🔄 Admin toggled Bedrock account status: ${accountId} -> ${newStatus ? 'active' : 'inactive'}`);
+    res.json({ success: true, isActive: newStatus });
+  } catch (error) {
+    logger.error('❌ Failed to toggle Bedrock account status:', error);
+    res.status(500).json({ error: 'Failed to toggle account status', message: error.message });
+  }
+});
+
+// 切换Bedrock账户调度状态
+router.put('/bedrock-accounts/:accountId/toggle-schedulable', authenticateAdmin, async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    
+    const accountResult = await bedrockAccountService.getAccount(accountId);
+    if (!accountResult.success) {
+      return res.status(404).json({ error: 'Account not found' });
+    }
+    
+    const newSchedulable = !accountResult.data.schedulable;
+    const updateResult = await bedrockAccountService.updateAccount(accountId, { schedulable: newSchedulable });
+
+    if (!updateResult.success) {
+      return res.status(500).json({ error: 'Failed to toggle schedulable status', message: updateResult.error });
+    }
+    
+    logger.success(`🔄 Admin toggled Bedrock account schedulable status: ${accountId} -> ${newSchedulable ? 'schedulable' : 'not schedulable'}`);
+    res.json({ success: true, schedulable: newSchedulable });
+  } catch (error) {
+    logger.error('❌ Failed to toggle Bedrock account schedulable status:', error);
+    res.status(500).json({ error: 'Failed to toggle schedulable status', message: error.message });
+  }
+});
+
+// 测试Bedrock账户连接
+router.post('/bedrock-accounts/:accountId/test', authenticateAdmin, async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    
+    const result = await bedrockAccountService.testAccount(accountId);
+
+    if (!result.success) {
+      return res.status(500).json({ error: 'Account test failed', message: result.error });
+    }
+    
+    logger.success(`🧪 Admin tested Bedrock account: ${accountId} - ${result.data.status}`);
+    res.json({ success: true, data: result.data });
+  } catch (error) {
+    logger.error('❌ Failed to test Bedrock account:', error);
+    res.status(500).json({ error: 'Failed to test Bedrock account', message: error.message });
   }
 });
 
@@ -2724,7 +2946,7 @@ router.get('/api-keys-usage-trend', authenticateAdmin, async (req, res) => {
 // 计算总体使用费用
 router.get('/usage-costs', authenticateAdmin, async (req, res) => {
   try {
-    const { period = 'all' } = req.query; // all, today, monthly
+    const { period = 'all' } = req.query; // all, today, monthly, 7days
     
     logger.info(`💰 Calculating usage costs for period: ${period}`);
     
@@ -2752,6 +2974,95 @@ router.get('/usage-costs', authenticateAdmin, async (req, res) => {
       pattern = `usage:model:daily:*:${today}`;
     } else if (period === 'monthly') {
       pattern = `usage:model:monthly:*:${currentMonth}`;
+    } else if (period === '7days') {
+      // 最近7天：汇总daily数据
+      const modelUsageMap = new Map();
+      
+      // 获取最近7天的所有daily统计数据
+      for (let i = 0; i < 7; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const tzDate = redis.getDateInTimezone(date);
+        const dateStr = `${tzDate.getUTCFullYear()}-${String(tzDate.getUTCMonth() + 1).padStart(2, '0')}-${String(tzDate.getUTCDate()).padStart(2, '0')}`;
+        const dayPattern = `usage:model:daily:*:${dateStr}`;
+        
+        const dayKeys = await client.keys(dayPattern);
+        
+        for (const key of dayKeys) {
+          const modelMatch = key.match(/usage:model:daily:(.+):\d{4}-\d{2}-\d{2}$/);
+          if (!modelMatch) continue;
+          
+          const model = modelMatch[1];
+          const data = await client.hgetall(key);
+          
+          if (data && Object.keys(data).length > 0) {
+            if (!modelUsageMap.has(model)) {
+              modelUsageMap.set(model, {
+                inputTokens: 0,
+                outputTokens: 0,
+                cacheCreateTokens: 0,
+                cacheReadTokens: 0
+              });
+            }
+            
+            const modelUsage = modelUsageMap.get(model);
+            modelUsage.inputTokens += parseInt(data.inputTokens) || 0;
+            modelUsage.outputTokens += parseInt(data.outputTokens) || 0;
+            modelUsage.cacheCreateTokens += parseInt(data.cacheCreateTokens) || 0;
+            modelUsage.cacheReadTokens += parseInt(data.cacheReadTokens) || 0;
+          }
+        }
+      }
+      
+      // 计算7天统计的费用
+      logger.info(`💰 Processing ${modelUsageMap.size} unique models for 7days cost calculation`);
+      
+      for (const [model, usage] of modelUsageMap) {
+        const usageData = {
+          input_tokens: usage.inputTokens,
+          output_tokens: usage.outputTokens,
+          cache_creation_input_tokens: usage.cacheCreateTokens,
+          cache_read_input_tokens: usage.cacheReadTokens
+        };
+        
+        const costResult = CostCalculator.calculateCost(usageData, model);
+        totalCosts.inputCost += costResult.costs.input;
+        totalCosts.outputCost += costResult.costs.output;
+        totalCosts.cacheCreateCost += costResult.costs.cacheWrite;
+        totalCosts.cacheReadCost += costResult.costs.cacheRead;
+        totalCosts.totalCost += costResult.costs.total;
+        
+        logger.info(`💰 Model ${model} (7days): ${usage.inputTokens + usage.outputTokens + usage.cacheCreateTokens + usage.cacheReadTokens} tokens, cost: ${costResult.formatted.total}`);
+        
+        // 记录模型费用
+        modelCosts[model] = {
+          model,
+          requests: 0, // 7天汇总数据没有请求数统计
+          usage: usageData,
+          costs: costResult.costs,
+          formatted: costResult.formatted,
+          usingDynamicPricing: costResult.usingDynamicPricing
+        };
+      }
+      
+      // 返回7天统计结果
+      return res.json({
+        success: true,
+        data: {
+          period,
+          totalCosts: {
+            ...totalCosts,
+            formatted: {
+              inputCost: CostCalculator.formatCost(totalCosts.inputCost),
+              outputCost: CostCalculator.formatCost(totalCosts.outputCost),
+              cacheCreateCost: CostCalculator.formatCost(totalCosts.cacheCreateCost),
+              cacheReadCost: CostCalculator.formatCost(totalCosts.cacheReadCost),
+              totalCost: CostCalculator.formatCost(totalCosts.totalCost)
+            }
+          },
+          modelCosts: Object.values(modelCosts)
+        }
+      });
     } else {
       // 全部时间，先尝试从Redis获取所有历史模型统计数据（只使用monthly数据避免重复计算）
       const allModelKeys = await client.keys('usage:model:monthly:*:*');

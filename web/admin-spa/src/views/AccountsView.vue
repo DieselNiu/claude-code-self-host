@@ -246,6 +246,15 @@
                     <span class="text-xs font-medium text-purple-700">API Key</span>
                   </div>
                   <div
+                    v-else-if="account.platform === 'bedrock'"
+                    class="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-orange-100 to-red-100 rounded-lg border border-orange-200"
+                  >
+                    <i class="fab fa-aws text-orange-700 text-xs" />
+                    <span class="text-xs font-semibold text-orange-800">Bedrock</span>
+                    <span class="w-px h-4 bg-orange-300 mx-1" />
+                    <span class="text-xs font-medium text-orange-700">AWS</span>
+                  </div>
+                  <div
                     v-else
                     class="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-indigo-100 to-blue-100 rounded-lg border border-indigo-200"
                   >
@@ -303,7 +312,7 @@
               </td>
               <td class="px-3 py-4 whitespace-nowrap">
                 <div
-                  v-if="account.platform === 'claude' || account.platform === 'claude-console'"
+                  v-if="account.platform === 'claude' || account.platform === 'claude-console' || account.platform === 'bedrock'"
                   class="flex items-center gap-2"
                 >
                   <div class="w-16 bg-gray-200 rounded-full h-2">
@@ -491,13 +500,16 @@
                   'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0',
                   account.platform === 'claude' 
                     ? 'bg-gradient-to-br from-purple-500 to-purple-600' 
-                    : 'bg-gradient-to-br from-blue-500 to-blue-600'
+                    : account.platform === 'bedrock'
+                      ? 'bg-gradient-to-br from-orange-500 to-red-600'
+                      : 'bg-gradient-to-br from-blue-500 to-blue-600'
                 ]"
               >
                 <i
                   :class="[
                     'text-white text-sm',
-                    account.platform === 'claude' ? 'fas fa-brain' : 'fas fa-robot'
+                    account.platform === 'claude' ? 'fas fa-brain' : 
+                    account.platform === 'bedrock' ? 'fab fa-aws' : 'fas fa-robot'
                   ]"
                 />
               </div>
@@ -765,9 +777,10 @@ const sortedAccounts = computed(() => {
 const loadAccounts = async () => {
   accountsLoading.value = true
   try {
-    const [claudeData, claudeConsoleData, geminiData, apiKeysData, groupsData] = await Promise.all([
+    const [claudeData, claudeConsoleData, bedrockData, geminiData, apiKeysData, groupsData] = await Promise.all([
       apiClient.get('/admin/claude-accounts'),
       apiClient.get('/admin/claude-console-accounts'),
+      apiClient.get('/admin/bedrock-accounts'),
       apiClient.get('/admin/gemini-accounts'),
       apiClient.get('/admin/api-keys'),
       apiClient.get('/admin/account-groups')
@@ -823,6 +836,15 @@ const loadAccounts = async () => {
         return { ...acc, platform: 'claude-console', boundApiKeysCount: 0, groupInfo }
       })
       allAccounts.push(...claudeConsoleAccounts)
+    }
+    
+    if (bedrockData.success) {
+      const bedrockAccounts = (bedrockData.data || []).map(acc => {
+        // Bedrock账户暂时不支持直接绑定
+        const groupInfo = accountGroupMap.get(acc.id) || null
+        return { ...acc, platform: 'bedrock', boundApiKeysCount: 0, groupInfo }
+      })
+      allAccounts.push(...bedrockAccounts)
     }
     
     if (geminiData.success) {
@@ -1000,6 +1022,8 @@ const deleteAccount = async (account) => {
       endpoint = `/admin/claude-accounts/${account.id}`
     } else if (account.platform === 'claude-console') {
       endpoint = `/admin/claude-console-accounts/${account.id}`
+    } else if (account.platform === 'bedrock') {
+      endpoint = `/admin/bedrock-accounts/${account.id}`
     } else {
       endpoint = `/admin/gemini-accounts/${account.id}`
     }
@@ -1050,6 +1074,8 @@ const toggleSchedulable = async (account) => {
       endpoint = `/admin/claude-accounts/${account.id}/toggle-schedulable`
     } else if (account.platform === 'claude-console') {
       endpoint = `/admin/claude-console-accounts/${account.id}/toggle-schedulable`
+    } else if (account.platform === 'bedrock') {
+      endpoint = `/admin/bedrock-accounts/${account.id}/toggle-schedulable`
     } else if (account.platform === 'gemini') {
       endpoint = `/admin/gemini-accounts/${account.id}/toggle-schedulable`
     } else {

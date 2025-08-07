@@ -1,5 +1,6 @@
 const claudeAccountService = require('./claudeAccountService');
 const claudeConsoleAccountService = require('./claudeConsoleAccountService');
+const bedrockAccountService = require('./bedrockAccountService');
 const accountGroupService = require('./accountGroupService');
 const redis = require('../models/redis');
 const logger = require('../utils/logger');
@@ -55,6 +56,20 @@ class UnifiedClaudeScheduler {
           };
         } else {
           logger.warn(`⚠️ Bound Claude Console account ${apiKeyData.claudeConsoleAccountId} is not available, falling back to pool`);
+        }
+      }
+
+      // 3. 检查Bedrock账户绑定
+      if (apiKeyData.bedrockAccountId) {
+        const boundBedrockAccountResult = await bedrockAccountService.getAccount(apiKeyData.bedrockAccountId);
+        if (boundBedrockAccountResult.success && boundBedrockAccountResult.data.isActive === true) {
+          logger.info(`🎯 Using bound dedicated Bedrock account: ${boundBedrockAccountResult.data.name} (${apiKeyData.bedrockAccountId}) for API key ${apiKeyData.name}`);
+          return {
+            accountId: apiKeyData.bedrockAccountId,
+            accountType: 'bedrock'
+          };
+        } else {
+          logger.warn(`⚠️ Bound Bedrock account ${apiKeyData.bedrockAccountId} is not available, falling back to pool`);
         }
       }
 
@@ -155,6 +170,23 @@ class UnifiedClaudeScheduler {
       }
     }
 
+    // 3. 检查Bedrock账户绑定
+    if (apiKeyData.bedrockAccountId) {
+      const boundBedrockAccountResult = await bedrockAccountService.getAccount(apiKeyData.bedrockAccountId);
+      if (boundBedrockAccountResult.success && boundBedrockAccountResult.data.isActive === true) {
+        logger.info(`🎯 Using bound dedicated Bedrock account: ${boundBedrockAccountResult.data.name} (${apiKeyData.bedrockAccountId})`);
+        return [{
+          ...boundBedrockAccountResult.data,
+          accountId: boundBedrockAccountResult.data.id,
+          accountType: 'bedrock',
+          priority: parseInt(boundBedrockAccountResult.data.priority) || 50,
+          lastUsedAt: boundBedrockAccountResult.data.lastUsedAt || '0'
+        }];
+      } else {
+        logger.warn(`⚠️ Bound Bedrock account ${apiKeyData.bedrockAccountId} is not available`);
+      }
+    }
+
     // 获取官方Claude账户（共享池）
     const claudeAccounts = await redis.getAllClaudeAccounts();
     for (const account of claudeAccounts) {
@@ -227,8 +259,35 @@ class UnifiedClaudeScheduler {
         logger.info(`❌ Claude Console account ${account.name} not eligible - isActive: ${account.isActive}, status: ${account.status}, accountType: ${account.accountType}, schedulable: ${account.schedulable}`);
       }
     }
+
+    // 获取Bedrock账户（共享池）
+    const bedrockAccountsResult = await bedrockAccountService.getAllAccounts();
+    if (bedrockAccountsResult.success) {
+      const bedrockAccounts = bedrockAccountsResult.data;
+      logger.info(`📋 Found ${bedrockAccounts.length} total Bedrock accounts`);
+      
+      for (const account of bedrockAccounts) {
+        logger.info(`🔍 Checking Bedrock account: ${account.name} - isActive: ${account.isActive}, accountType: ${account.accountType}, schedulable: ${account.schedulable}`);
+        
+        if (account.isActive === true && 
+            account.accountType === 'shared' &&
+            this._isSchedulable(account.schedulable)) { // 检查是否可调度
+          
+          availableAccounts.push({
+            ...account,
+            accountId: account.id,
+            accountType: 'bedrock',
+            priority: parseInt(account.priority) || 50,
+            lastUsedAt: account.lastUsedAt || '0'
+          });
+          logger.info(`✅ Added Bedrock account to available pool: ${account.name} (priority: ${account.priority})`);
+        } else {
+          logger.info(`❌ Bedrock account ${account.name} not eligible - isActive: ${account.isActive}, accountType: ${account.accountType}, schedulable: ${account.schedulable}`);
+        }
+      }
+    }
     
-    logger.info(`📊 Total available accounts: ${availableAccounts.length} (Claude: ${availableAccounts.filter(a => a.accountType === 'claude-official').length}, Console: ${availableAccounts.filter(a => a.accountType === 'claude-console').length})`);
+    logger.info(`📊 Total available accounts: ${availableAccounts.length} (Claude: ${availableAccounts.filter(a => a.accountType === 'claude-official').length}, Console: ${availableAccounts.filter(a => a.accountType === 'claude-console').length}, Bedrock: ${availableAccounts.filter(a => a.accountType === 'bedrock').length})`);
     return availableAccounts;
   }
 
@@ -272,6 +331,18 @@ class UnifiedClaudeScheduler {
           return false;
         }
         return !(await claudeConsoleAccountService.isAccountRateLimited(accountId));
+      } else if (accountType === 'bedrock') {
+        const accountResult = await bedrockAccountService.getAccount(accountId);
+        if (!accountResult.success || !accountResult.data.isActive) {
+          return false;
+        }
+        // 检查是否可调度
+        if (!this._isSchedulable(accountResult.data.schedulable)) {
+          logger.info(`🚫 Bedrock account ${accountId} is not schedulable`);
+          return false;
+        }
+        // Bedrock账户暂不需要限流检查，因为AWS管理限流
+        return true;
       }
       return false;
     } catch (error) {

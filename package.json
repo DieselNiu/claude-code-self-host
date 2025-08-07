@@ -8,6 +8,7 @@
     "dev": "nodemon src/app.js",
     "build:web": "cd web/admin-spa && npm run build",
     "install:web": "cd web/admin-spa && npm install",
+    "update:pricing": "node scripts/update-model-pricing.js",
     "setup": "node scripts/setup.js",
     "cli": "node cli/index.js",
     "init:costs": "node src/cli/initCosts.js",
@@ -41,6 +42,8 @@
     "test:pricing-fallback": "node scripts/test-pricing-fallback.js"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.861.0",
+    "@aws-sdk/credential-providers": "^3.859.0",
     "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
     "chalk": "^4.1.2",

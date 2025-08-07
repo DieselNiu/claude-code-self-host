@@ -83,10 +83,19 @@
                   >
                   <span class="text-sm text-gray-700">Gemini</span>
                 </label>
+                <label class="flex items-center cursor-pointer">
+                  <input 
+                    v-model="form.platform" 
+                    type="radio" 
+                    value="bedrock" 
+                    class="mr-2"
+                  >
+                  <span class="text-sm text-gray-700">Bedrock</span>
+                </label>
               </div>
             </div>
             
-            <div v-if="!isEdit && form.platform !== 'claude-console'">
+            <div v-if="!isEdit && form.platform !== 'claude-console' && form.platform !== 'bedrock'">
               <label class="block text-sm font-semibold text-gray-700 mb-3">添加方式</label>
               <div class="flex gap-4">
                 <label class="flex items-center cursor-pointer">
@@ -253,6 +262,157 @@
               </div>
             </div>
             
+            <!-- Bedrock 特定字段 -->
+            <div
+              v-if="form.platform === 'bedrock' && !isEdit"
+              class="space-y-4"
+            >
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">AWS 访问密钥 ID *</label>
+                <input 
+                  v-model="form.accessKeyId" 
+                  type="text" 
+                  required
+                  class="form-input w-full"
+                  :class="{ 'border-red-500': errors.accessKeyId }"
+                  placeholder="请输入 AWS Access Key ID"
+                >
+                <p
+                  v-if="errors.accessKeyId"
+                  class="text-red-500 text-xs mt-1"
+                >
+                  {{ errors.accessKeyId }}
+                </p>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">AWS 秘密访问密钥 *</label>
+                <input 
+                  v-model="form.secretAccessKey" 
+                  type="password" 
+                  required
+                  class="form-input w-full"
+                  :class="{ 'border-red-500': errors.secretAccessKey }"
+                  placeholder="请输入 AWS Secret Access Key"
+                >
+                <p
+                  v-if="errors.secretAccessKey"
+                  class="text-red-500 text-xs mt-1"
+                >
+                  {{ errors.secretAccessKey }}
+                </p>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">AWS 区域 *</label>
+                <input 
+                  v-model="form.region" 
+                  type="text" 
+                  required
+                  class="form-input w-full"
+                  :class="{ 'border-red-500': errors.region }"
+                  placeholder="例如：us-east-1"
+                >
+                <p
+                  v-if="errors.region"
+                  class="text-red-500 text-xs mt-1"
+                >
+                  {{ errors.region }}
+                </p>
+                <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div class="flex items-start gap-2">
+                    <i class="fas fa-info-circle text-blue-600 mt-0.5" />
+                    <div class="text-xs text-blue-700">
+                      <p class="font-medium mb-1">
+                        常用 AWS 区域参考：
+                      </p>
+                      <div class="grid grid-cols-2 gap-1 text-xs">
+                        <span>• us-east-1 (美国东部)</span>
+                        <span>• us-west-2 (美国西部)</span>
+                        <span>• eu-west-1 (欧洲爱尔兰)</span>
+                        <span>• ap-southeast-1 (新加坡)</span>
+                        <span>• ap-northeast-1 (东京)</span>
+                        <span>• eu-central-1 (法兰克福)</span>
+                      </div>
+                      <p class="mt-2 text-blue-600">
+                        💡 请输入完整的区域代码，如 us-east-1
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">会话令牌 (可选)</label>
+                <input 
+                  v-model="form.sessionToken" 
+                  type="password" 
+                  class="form-input w-full"
+                  placeholder="如果使用临时凭证，请输入会话令牌"
+                >
+                <p class="text-xs text-gray-500 mt-1">
+                  仅在使用临时 AWS 凭证时需要填写
+                </p>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">默认主模型 (可选)</label>
+                <input 
+                  v-model="form.defaultModel" 
+                  type="text" 
+                  class="form-input w-full"
+                  placeholder="例如：us.anthropic.claude-sonnet-4-20250514-v1:0"
+                >
+                <p class="text-xs text-gray-500 mt-1">
+                  留空将使用系统默认模型。支持 inference profile ID 或 ARN
+                </p>
+                <div class="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div class="flex items-start gap-2">
+                    <i class="fas fa-info-circle text-amber-600 mt-0.5" />
+                    <div class="text-xs text-amber-700">
+                      <p class="font-medium mb-1">
+                        Bedrock 模型配置说明：
+                      </p>
+                      <ul class="list-disc list-inside space-y-1 text-xs">
+                        <li>支持 Inference Profile ID（推荐）</li>
+                        <li>支持 Application Inference Profile ARN</li>
+                        <li>常用模型：us.anthropic.claude-sonnet-4-20250514-v1:0</li>
+                        <li>留空将使用系统配置的默认模型</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">小快速模型 (可选)</label>
+                <input 
+                  v-model="form.smallFastModel" 
+                  type="text" 
+                  class="form-input w-full"
+                  placeholder="例如：us.anthropic.claude-3-5-haiku-20241022-v1:0"
+                >
+                <p class="text-xs text-gray-500 mt-1">
+                  用于快速响应的轻量级模型，留空将使用系统默认
+                </p>
+              </div>
+              
+              
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">限流时间 (分钟)</label>
+                <input 
+                  v-model.number="form.rateLimitDuration" 
+                  type="number" 
+                  min="1"
+                  class="form-input w-full"
+                  placeholder="默认60分钟"
+                >
+                <p class="text-xs text-gray-500 mt-1">
+                  当账号返回429错误时，暂停调度的时间（分钟）
+                </p>
+              </div>
+            </div>
+            
             <!-- Claude Console 特定字段 -->
             <div
               v-if="form.platform === 'claude-console' && !isEdit"
@@ -295,7 +455,7 @@
               </div>
               
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">支持的模型 (可选)--注意,ClaudeCode必须加上hiku模型！</label>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">支持的模型 (可选)--注意,ClaudeCode必须加上haiku模型！</label>
                 <div class="mb-2 flex gap-2">
                   <button
                     type="button"
@@ -323,7 +483,7 @@
                   v-model="form.supportedModels" 
                   rows="3" 
                   class="form-input w-full resize-none"
-                  placeholder="每行一个模型，留空表示支持所有模型。特别注意,ClaudeCode必须加上hiku模型！"
+                  placeholder="每行一个模型，留空表示支持所有模型。特别注意,ClaudeCode必须加上haiku模型！"
                 />
                 <p class="text-xs text-gray-500 mt-1">
                   留空表示支持所有模型。如果指定模型，请求中的模型不在列表内将不会调度到此账号
@@ -355,8 +515,8 @@
               </div>
             </div>
             
-            <!-- Claude和Claude Console的优先级设置 -->
-            <div v-if="(form.platform === 'claude' || form.platform === 'claude-console')">
+            <!-- Claude、Claude Console和Bedrock的优先级设置 -->
+            <div v-if="(form.platform === 'claude' || form.platform === 'claude-console' || form.platform === 'bedrock')">
               <label class="block text-sm font-semibold text-gray-700 mb-3">调度优先级 (1-100)</label>
               <input 
                 v-model.number="form.priority" 
@@ -373,7 +533,7 @@
             
             <!-- 手动输入 Token 字段 -->
             <div
-              v-if="form.addType === 'manual' && form.platform !== 'claude-console'"
+              v-if="form.addType === 'manual' && form.platform !== 'claude-console' && form.platform !== 'bedrock'"
               class="space-y-4 bg-blue-50 p-4 rounded-lg border border-blue-200"
             >
               <div class="flex items-start gap-3 mb-4">
@@ -462,7 +622,7 @@
                 取消
               </button>
               <button 
-                v-if="form.addType === 'oauth' && form.platform !== 'claude-console'"
+                v-if="form.addType === 'oauth' && form.platform !== 'claude-console' && form.platform !== 'bedrock'"
                 type="button" 
                 :disabled="loading"
                 class="btn btn-primary flex-1 py-3 px-6 font-semibold"
@@ -609,8 +769,8 @@
             </p>
           </div>
           
-          <!-- Claude和Claude Console的优先级设置（编辑模式） -->
-          <div v-if="(form.platform === 'claude' || form.platform === 'claude-console')">
+          <!-- Claude、Claude Console和Bedrock的优先级设置（编辑模式） -->
+          <div v-if="(form.platform === 'claude' || form.platform === 'claude-console' || form.platform === 'bedrock')">
             <label class="block text-sm font-semibold text-gray-700 mb-3">调度优先级 (1-100)</label>
             <input 
               v-model.number="form.priority" 
@@ -683,7 +843,7 @@
                 v-model="form.supportedModels" 
                 rows="3" 
                 class="form-input w-full resize-none"
-                placeholder="每行一个模型，留空表示支持所有模型。特别注意,ClaudeCode必须加上hiku模型！"
+                placeholder="每行一个模型，留空表示支持所有模型。特别注意,ClaudeCode必须加上haiku模型！"
               />
             </div>
             
@@ -708,9 +868,115 @@
             </div>
           </div>
           
+          <!-- Bedrock 特定字段（编辑模式）-->
+          <div
+            v-if="form.platform === 'bedrock'"
+            class="space-y-4"
+          >
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">AWS 访问密钥 ID</label>
+              <input 
+                v-model="form.accessKeyId" 
+                type="text" 
+                class="form-input w-full"
+                placeholder="留空表示不更新"
+              >
+              <p class="text-xs text-gray-500 mt-1">
+                留空表示不更新 AWS Access Key ID
+              </p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">AWS 秘密访问密钥</label>
+              <input 
+                v-model="form.secretAccessKey" 
+                type="password" 
+                class="form-input w-full"
+                placeholder="留空表示不更新"
+              >
+              <p class="text-xs text-gray-500 mt-1">
+                留空表示不更新 AWS Secret Access Key
+              </p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">AWS 区域</label>
+              <input 
+                v-model="form.region" 
+                type="text" 
+                class="form-input w-full"
+                placeholder="例如：us-east-1"
+              >
+              <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-start gap-2">
+                  <i class="fas fa-info-circle text-blue-600 mt-0.5" />
+                  <div class="text-xs text-blue-700">
+                    <p class="font-medium mb-1">
+                      常用 AWS 区域参考：
+                    </p>
+                    <div class="grid grid-cols-2 gap-1 text-xs">
+                      <span>• us-east-1 (美国东部)</span>
+                      <span>• us-west-2 (美国西部)</span>
+                      <span>• eu-west-1 (欧洲爱尔兰)</span>
+                      <span>• ap-southeast-1 (新加坡)</span>
+                      <span>• ap-northeast-1 (东京)</span>
+                      <span>• eu-central-1 (法兰克福)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">会话令牌 (可选)</label>
+              <input 
+                v-model="form.sessionToken" 
+                type="password" 
+                class="form-input w-full"
+                placeholder="留空表示不更新"
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">默认主模型 (可选)</label>
+              <input 
+                v-model="form.defaultModel" 
+                type="text" 
+                class="form-input w-full"
+                placeholder="例如：us.anthropic.claude-sonnet-4-20250514-v1:0"
+              >
+              <p class="text-xs text-gray-500 mt-1">
+                留空将使用系统默认模型。支持 inference profile ID 或 ARN
+              </p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">小快速模型 (可选)</label>
+              <input 
+                v-model="form.smallFastModel" 
+                type="text" 
+                class="form-input w-full"
+                placeholder="例如：us.anthropic.claude-3-5-haiku-20241022-v1:0"
+              >
+              <p class="text-xs text-gray-500 mt-1">
+                用于快速响应的轻量级模型，留空将使用系统默认
+              </p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">限流时间 (分钟)</label>
+              <input 
+                v-model.number="form.rateLimitDuration" 
+                type="number" 
+                min="1"
+                class="form-input w-full"
+              >
+            </div>
+          </div>
+          
           <!-- Token 更新 -->
           <div
-            v-if="form.platform !== 'claude-console'"
+            v-if="form.platform !== 'claude-console' && form.platform !== 'bedrock'"
             class="bg-amber-50 p-4 rounded-lg border border-amber-200"
           >
             <div class="flex items-start gap-3 mb-4">
@@ -884,7 +1150,14 @@ const form = ref({
     return '';
   })(),
   userAgent: props.account?.userAgent || '',
-  rateLimitDuration: props.account?.rateLimitDuration || 60
+  rateLimitDuration: props.account?.rateLimitDuration || 60,
+  // Bedrock 特定字段
+  accessKeyId: props.account?.accessKeyId || '',
+  secretAccessKey: props.account?.secretAccessKey || '',
+  region: props.account?.region || '',
+  sessionToken: props.account?.sessionToken || '',
+  defaultModel: props.account?.defaultModel || '',
+  smallFastModel: props.account?.smallFastModel || ''
 })
 
 // 表单验证错误
@@ -892,7 +1165,10 @@ const errors = ref({
   name: '',
   accessToken: '',
   apiUrl: '',
-  apiKey: ''
+  apiKey: '',
+  accessKeyId: '',
+  secretAccessKey: '',
+  region: ''
 })
 
 // 计算是否可以进入下一步
@@ -1015,6 +1291,20 @@ const createAccount = async () => {
       errors.value.apiKey = '请填写 API Key'
       hasError = true
     }
+  } else if (form.value.platform === 'bedrock') {
+    // Bedrock 验证
+    if (!form.value.accessKeyId || form.value.accessKeyId.trim() === '') {
+      errors.value.accessKeyId = '请填写 AWS 访问密钥 ID'
+      hasError = true
+    }
+    if (!form.value.secretAccessKey || form.value.secretAccessKey.trim() === '') {
+      errors.value.secretAccessKey = '请填写 AWS 秘密访问密钥'
+      hasError = true
+    }
+    if (!form.value.region || form.value.region.trim() === '') {
+      errors.value.region = '请选择 AWS 区域'
+      hasError = true
+    }
   } else if (form.value.addType === 'manual' && (!form.value.accessToken || form.value.accessToken.trim() === '')) {
     errors.value.accessToken = '请填写 Access Token'
     hasError = true
@@ -1086,6 +1376,18 @@ const createAccount = async () => {
         : []
       data.userAgent = form.value.userAgent || null
       data.rateLimitDuration = form.value.rateLimitDuration || 60
+    } else if (form.value.platform === 'bedrock') {
+      // Bedrock 账户特定数据 - 构造 awsCredentials 对象
+      data.awsCredentials = {
+        accessKeyId: form.value.accessKeyId,
+        secretAccessKey: form.value.secretAccessKey,
+        sessionToken: form.value.sessionToken || null
+      }
+      data.region = form.value.region
+      data.defaultModel = form.value.defaultModel || null
+      data.smallFastModel = form.value.smallFastModel || null
+      data.priority = form.value.priority || 50
+      data.rateLimitDuration = form.value.rateLimitDuration || 60
     }
     
     let result
@@ -1093,6 +1395,8 @@ const createAccount = async () => {
       result = await accountsStore.createClaudeAccount(data)
     } else if (form.value.platform === 'claude-console') {
       result = await accountsStore.createClaudeConsoleAccount(data)
+    } else if (form.value.platform === 'bedrock') {
+      result = await accountsStore.createBedrockAccount(data)
     } else {
       result = await accountsStore.createGeminiAccount(data)
     }
@@ -1207,10 +1511,37 @@ const updateAccount = async () => {
       data.rateLimitDuration = form.value.rateLimitDuration || 60
     }
     
+    // Bedrock 特定更新
+    if (props.account.platform === 'bedrock') {
+      // 只有当有凭证变更时才构造 awsCredentials 对象
+      if (form.value.accessKeyId || form.value.secretAccessKey || form.value.sessionToken) {
+        data.awsCredentials = {}
+        if (form.value.accessKeyId) {
+          data.awsCredentials.accessKeyId = form.value.accessKeyId
+        }
+        if (form.value.secretAccessKey) {
+          data.awsCredentials.secretAccessKey = form.value.secretAccessKey
+        }
+        if (form.value.sessionToken !== undefined) {
+          data.awsCredentials.sessionToken = form.value.sessionToken || null
+        }
+      }
+      if (form.value.region) {
+        data.region = form.value.region
+      }
+      // 模型配置（支持设置为空来使用系统默认）
+      data.defaultModel = form.value.defaultModel || null
+      data.smallFastModel = form.value.smallFastModel || null
+      data.priority = form.value.priority || 50
+      data.rateLimitDuration = form.value.rateLimitDuration || 60
+    }
+    
     if (props.account.platform === 'claude') {
       await accountsStore.updateClaudeAccount(props.account.id, data)
     } else if (props.account.platform === 'claude-console') {
       await accountsStore.updateClaudeConsoleAccount(props.account.id, data)
+    } else if (props.account.platform === 'bedrock') {
+      await accountsStore.updateBedrockAccount(props.account.id, data)
     } else {
       await accountsStore.updateGeminiAccount(props.account.id, data)
     }
@@ -1288,9 +1619,13 @@ const handleGroupRefresh = async () => {
 }
 
 // 监听平台变化，重置表单
-watch(() => form.value.platform, (newPlatform) => {
-  if (newPlatform === 'claude-console') {
-    form.value.addType = 'manual' // Claude Console 只支持手动模式
+watch(() => form.value.platform, (newPlatform, oldPlatform) => {
+  // 处理添加方式的自动切换
+  if (newPlatform === 'claude-console' || newPlatform === 'bedrock') {
+    form.value.addType = 'manual' // Claude Console 和 Bedrock 只支持手动模式
+  } else if (oldPlatform === 'claude-console' && (newPlatform === 'claude' || newPlatform === 'gemini')) {
+    // 从 Claude Console 切换到其他平台时，恢复为 OAuth
+    form.value.addType = 'oauth'
   }
   
   // 平台变化时，清空分组选择
@@ -1388,7 +1723,14 @@ watch(() => props.account, (newAccount) => {
         return '';
       })(),
       userAgent: newAccount.userAgent || '',
-      rateLimitDuration: newAccount.rateLimitDuration || 60
+      rateLimitDuration: newAccount.rateLimitDuration || 60,
+      // Bedrock 特定字段
+      accessKeyId: '',  // 编辑模式不显示现有的访问密钥
+      secretAccessKey: '',  // 编辑模式不显示现有的秘密密钥
+      region: newAccount.region || '',
+      sessionToken: '',  // 编辑模式不显示现有的会话令牌
+      defaultModel: newAccount.defaultModel || '',
+      smallFastModel: newAccount.smallFastModel || ''
     }
     
     // 如果是分组类型，加载分组ID

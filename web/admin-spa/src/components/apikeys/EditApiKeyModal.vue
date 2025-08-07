@@ -366,21 +366,43 @@
                     暂无限制的模型
                   </span>
                 </div>
-                <div class="flex gap-2">
-                  <input 
-                    v-model="form.modelInput"
-                    type="text"
-                    placeholder="输入模型名称，按回车添加"
-                    class="form-input flex-1"
-                    @keydown.enter.prevent="addRestrictedModel"
-                  >
-                  <button 
-                    type="button"
-                    class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                    @click="addRestrictedModel"
-                  >
-                    <i class="fas fa-plus" />
-                  </button>
+                <div class="space-y-3">
+                  <!-- 快速添加按钮 -->
+                  <div class="flex flex-wrap gap-2">
+                    <button 
+                      v-for="model in availableQuickModels" 
+                      :key="model"
+                      type="button"
+                      class="px-3 py-1 text-xs sm:text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors flex-shrink-0"
+                      @click="quickAddRestrictedModel(model)"
+                    >
+                      {{ model }}
+                    </button>
+                    <span
+                      v-if="availableQuickModels.length === 0"
+                      class="text-gray-400 text-sm italic"
+                    >
+                      所有常用模型已在限制列表中
+                    </span>
+                  </div>
+                  
+                  <!-- 手动输入 -->
+                  <div class="flex gap-2">
+                    <input 
+                      v-model="form.modelInput"
+                      type="text"
+                      placeholder="输入模型名称，按回车添加"
+                      class="form-input flex-1"
+                      @keydown.enter.prevent="addRestrictedModel"
+                    >
+                    <button 
+                      type="button"
+                      class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                      @click="addRestrictedModel"
+                    >
+                      <i class="fas fa-plus" />
+                    </button>
+                  </div>
                 </div>
                 <p class="text-xs text-gray-500 mt-2">
                   设置此API Key无法访问的模型，例如：claude-opus-4-20250514
@@ -545,6 +567,24 @@ const removeRestrictedModel = (index) => {
   form.restrictedModels.splice(index, 1)
 }
 
+// 常用模型列表
+const commonModels = ref([
+  'claude-opus-4-20250514',
+  'claude-opus-4-1-20250805'
+])
+
+// 可用的快捷模型（过滤掉已在限制列表中的）
+const availableQuickModels = computed(() => {
+  return commonModels.value.filter(model => !form.restrictedModels.includes(model))
+})
+
+// 快速添加限制的模型
+const quickAddRestrictedModel = (model) => {
+  if (!form.restrictedModels.includes(model)) {
+    form.restrictedModels.push(model)
+  }
+}
+
 // 标签管理方法
 const addTag = () => {
   if (newTag.value && newTag.value.trim()) {
@@ -587,15 +627,20 @@ const updateApiKey = async () => {
       if (form.claudeAccountId.startsWith('console:')) {
         // Claude Console账户
         data.claudeConsoleAccountId = form.claudeAccountId.substring(8);
+        data.claudeAccountId = null; // 清空OAuth账号
       } else if (!form.claudeAccountId.startsWith('group:')) {
         // Claude OAuth账户（非分组）
         data.claudeAccountId = form.claudeAccountId;
+        data.claudeConsoleAccountId = null; // 清空Console账号
       } else {
         // 分组
         data.claudeAccountId = form.claudeAccountId;
+        data.claudeConsoleAccountId = null; // 清空Console账号
       }
     } else {
+      // 使用共享池，清空所有绑定
       data.claudeAccountId = null;
+      data.claudeConsoleAccountId = null;
     }
     
     // Gemini账户绑定
