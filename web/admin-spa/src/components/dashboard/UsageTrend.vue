@@ -1,25 +1,17 @@
 <template>
-  <div class="glass-strong rounded-3xl p-6 mb-8">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-      <h2 class="text-xl font-bold text-gray-800 flex items-center">
+  <div class="glass-strong mb-8 rounded-3xl p-6">
+    <div class="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+      <h2 class="flex items-center text-xl font-bold text-gray-800">
         <i class="fas fa-chart-area mr-2 text-blue-500" />
         使用趋势
       </h2>
-      
+
       <div class="flex items-center gap-3">
-        <el-radio-group
-          v-model="granularity"
-          size="small"
-          @change="handleGranularityChange"
-        >
-          <el-radio-button label="day">
-            按天
-          </el-radio-button>
-          <el-radio-button label="hour">
-            按小时
-          </el-radio-button>
+        <el-radio-group v-model="granularity" size="small" @change="handleGranularityChange">
+          <el-radio-button label="day"> 按天 </el-radio-button>
+          <el-radio-button label="hour"> 按小时 </el-radio-button>
         </el-radio-group>
-        
+
         <el-select
           v-model="trendPeriod"
           size="small"
@@ -35,11 +27,8 @@
         </el-select>
       </div>
     </div>
-    
-    <div
-      class="relative"
-      style="height: 300px;"
-    >
+
+    <div class="relative" style="height: 300px">
       <canvas ref="chartCanvas" />
     </div>
   </div>
@@ -66,15 +55,15 @@ const periodOptions = [
 
 const createChart = () => {
   if (!chartCanvas.value || !dashboardStore.trendData.length) return
-  
+
   if (chart) {
     chart.destroy()
   }
-  
+
   const { getGradient } = useChartConfig()
   const ctx = chartCanvas.value.getContext('2d')
-  
-  const labels = dashboardStore.trendData.map(item => {
+
+  const labels = dashboardStore.trendData.map((item) => {
     if (granularity.value === 'hour') {
       // 小时粒度使用hour字段
       const date = new Date(item.hour)
@@ -85,7 +74,7 @@ const createChart = () => {
     }
     return item.date
   })
-  
+
   chart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -93,7 +82,7 @@ const createChart = () => {
       datasets: [
         {
           label: '请求次数',
-          data: dashboardStore.trendData.map(item => item.requests),
+          data: dashboardStore.trendData.map((item) => item.requests),
           borderColor: '#667eea',
           backgroundColor: getGradient(ctx, '#667eea', 0.1),
           yAxisID: 'y',
@@ -101,7 +90,7 @@ const createChart = () => {
         },
         {
           label: 'Token使用量',
-          data: dashboardStore.trendData.map(item => item.tokens),
+          data: dashboardStore.trendData.map((item) => item.tokens),
           borderColor: '#f093fb',
           backgroundColor: getGradient(ctx, '#f093fb', 0.1),
           yAxisID: 'y1',
@@ -172,9 +161,13 @@ const handleGranularityChange = async () => {
   createChart()
 }
 
-watch(() => dashboardStore.trendData, () => {
-  createChart()
-}, { deep: true })
+watch(
+  () => dashboardStore.trendData,
+  () => {
+    createChart()
+  },
+  { deep: true }
+)
 
 onMounted(() => {
   createChart()

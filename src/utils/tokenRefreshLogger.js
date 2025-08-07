@@ -1,12 +1,12 @@
-const winston = require('winston');
-const path = require('path');
-const fs = require('fs');
-const { maskToken } = require('./tokenMask');
+const winston = require('winston')
+const path = require('path')
+const fs = require('fs')
+const { maskToken } = require('./tokenMask')
 
 // 确保日志目录存在
-const logDir = path.join(process.cwd(), 'logs');
+const logDir = path.join(process.cwd(), 'logs')
 if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
+  fs.mkdirSync(logDir, { recursive: true })
 }
 
 // 创建专用的 token 刷新日志记录器
@@ -17,9 +17,7 @@ const tokenRefreshLogger = winston.createLogger({
       format: 'YYYY-MM-DD HH:mm:ss.SSS'
     }),
     winston.format.json(),
-    winston.format.printf(info => {
-      return JSON.stringify(info, null, 2);
-    })
+    winston.format.printf((info) => JSON.stringify(info, null, 2))
   ),
   transports: [
     // 文件传输 - 每日轮转
@@ -39,16 +37,15 @@ const tokenRefreshLogger = winston.createLogger({
   ],
   // 错误处理
   exitOnError: false
-});
+})
 
 // 在开发环境添加控制台输出
 if (process.env.NODE_ENV !== 'production') {
-  tokenRefreshLogger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
-  }));
+  tokenRefreshLogger.add(
+    new winston.transports.Console({
+      format: winston.format.combine(winston.format.colorize(), winston.format.simple())
+    })
+  )
 }
 
 /**
@@ -62,7 +59,7 @@ function logRefreshStart(accountId, accountName, platform = 'claude', reason = '
     platform,
     reason,
     timestamp: new Date().toISOString()
-  });
+  })
 }
 
 /**
@@ -74,7 +71,7 @@ function logRefreshSuccess(accountId, accountName, platform = 'claude', tokenDat
     refreshToken: tokenData.refreshToken ? maskToken(tokenData.refreshToken) : '[NOT_PROVIDED]',
     expiresAt: tokenData.expiresAt || tokenData.expiry_date || '[NOT_PROVIDED]',
     scopes: tokenData.scopes || tokenData.scope || '[NOT_PROVIDED]'
-  };
+  }
 
   tokenRefreshLogger.info({
     event: 'token_refresh_success',
@@ -83,7 +80,7 @@ function logRefreshSuccess(accountId, accountName, platform = 'claude', tokenDat
     platform,
     tokenData: maskedTokenData,
     timestamp: new Date().toISOString()
-  });
+  })
 }
 
 /**
@@ -95,7 +92,7 @@ function logRefreshError(accountId, accountName, platform = 'claude', error, att
     code: error.code || 'UNKNOWN',
     statusCode: error.response?.status || 'N/A',
     responseData: error.response?.data || 'N/A'
-  };
+  }
 
   tokenRefreshLogger.error({
     event: 'token_refresh_error',
@@ -105,7 +102,7 @@ function logRefreshError(accountId, accountName, platform = 'claude', error, att
     error: errorInfo,
     attemptNumber,
     timestamp: new Date().toISOString()
-  });
+  })
 }
 
 /**
@@ -119,7 +116,7 @@ function logRefreshSkipped(accountId, accountName, platform = 'claude', reason =
     platform,
     reason,
     timestamp: new Date().toISOString()
-  });
+  })
 }
 
 /**
@@ -135,7 +132,7 @@ function logTokenUsage(accountId, accountName, platform = 'claude', expiresAt, i
     isExpired,
     remainingMinutes: expiresAt ? Math.floor((new Date(expiresAt) - Date.now()) / 60000) : 'N/A',
     timestamp: new Date().toISOString()
-  });
+  })
 }
 
 /**
@@ -147,7 +144,7 @@ function logBatchRefreshStart(totalAccounts, platform = 'all') {
     totalAccounts,
     platform,
     timestamp: new Date().toISOString()
-  });
+  })
 }
 
 /**
@@ -163,7 +160,7 @@ function logBatchRefreshComplete(results) {
       skipped: results.skipped || 0
     },
     timestamp: new Date().toISOString()
-  });
+  })
 }
 
 module.exports = {
@@ -175,4 +172,4 @@ module.exports = {
   logTokenUsage,
   logBatchRefreshStart,
   logBatchRefreshComplete
-};
+}

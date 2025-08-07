@@ -10,7 +10,7 @@ export const useSettingsStore = defineStore('settings', () => {
     siteIconData: '',
     updatedAt: null
   })
-  
+
   const loading = ref(false)
   const saving = ref(false)
 
@@ -21,14 +21,14 @@ export const useSettingsStore = defineStore('settings', () => {
     loading.value = true
     try {
       const result = await apiClient.get('/admin/oem-settings')
-      
+
       if (result && result.success) {
         oemSettings.value = { ...oemSettings.value, ...result.data }
-        
+
         // 应用设置到页面
         applyOemSettings()
       }
-      
+
       return result
     } catch (error) {
       console.error('Failed to load OEM settings:', error)
@@ -45,7 +45,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
       if (result && result.success) {
         oemSettings.value = { ...oemSettings.value, ...result.data }
-        
+
         // 应用设置到页面
         applyOemSettings()
       }
@@ -66,7 +66,7 @@ export const useSettingsStore = defineStore('settings', () => {
       siteIconData: '',
       updatedAt: null
     }
-    
+
     oemSettings.value = { ...defaultSettings }
     return await saveOemSettings(defaultSettings)
   }
@@ -77,7 +77,7 @@ export const useSettingsStore = defineStore('settings', () => {
     if (oemSettings.value.siteName) {
       document.title = `${oemSettings.value.siteName} - 管理后台`
     }
-    
+
     // 更新favicon
     if (oemSettings.value.siteIconData || oemSettings.value.siteIcon) {
       const favicon = document.querySelector('link[rel="icon"]') || document.createElement('link')
@@ -105,18 +105,18 @@ export const useSettingsStore = defineStore('settings', () => {
   // 验证文件上传
   const validateIconFile = (file) => {
     const errors = []
-    
+
     // 检查文件大小 (350KB)
     if (file.size > 350 * 1024) {
       errors.push('图标文件大小不能超过 350KB')
     }
-    
+
     // 检查文件类型
     const allowedTypes = ['image/x-icon', 'image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml']
     if (!allowedTypes.includes(file.type)) {
       errors.push('不支持的文件类型，请选择 .ico, .png, .jpg 或 .svg 文件')
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors
@@ -138,7 +138,7 @@ export const useSettingsStore = defineStore('settings', () => {
     oemSettings,
     loading,
     saving,
-    
+
     // Actions
     loadOemSettings,
     saveOemSettings,

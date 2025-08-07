@@ -19,12 +19,12 @@ const routes = [
       // 智能重定向：避免循环
       const currentPath = window.location.pathname
       const basePath = APP_CONFIG.basePath.replace(/\/$/, '') // 移除末尾斜杠
-      
+
       // 如果当前路径已经是 basePath 或 basePath/，重定向到 api-stats
       if (currentPath === basePath || currentPath === basePath + '/') {
         return '/api-stats'
       }
-      
+
       // 否则保持默认重定向
       return '/api-stats'
     }
@@ -116,7 +116,7 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-  
+
   console.log('路由导航:', {
     to: to.path,
     from: from.path,
@@ -124,12 +124,12 @@ router.beforeEach((to, from, next) => {
     requiresAuth: to.meta.requiresAuth,
     isAuthenticated: authStore.isAuthenticated
   })
-  
+
   // 防止重定向循环：如果已经在目标路径，直接放行
   if (to.path === from.path && to.fullPath === from.fullPath) {
     return next()
   }
-  
+
   // API Stats 页面不需要认证，直接放行
   if (to.path === '/api-stats' || to.path.startsWith('/api-stats')) {
     next()

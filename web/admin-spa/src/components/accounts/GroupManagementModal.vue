@@ -1,158 +1,118 @@
 <template>
   <Teleport to="body">
-    <div
-      v-if="show"
-      class="fixed inset-0 modal z-50 flex items-center justify-center p-3 sm:p-4"
-    >
-      <div class="modal-content w-full max-w-4xl p-4 sm:p-6 md:p-8 mx-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div class="flex items-center justify-between mb-4 sm:mb-6">
+    <div v-if="show" class="modal fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+      <div
+        class="modal-content custom-scrollbar mx-auto max-h-[90vh] w-full max-w-4xl overflow-y-auto p-4 sm:p-6 md:p-8"
+      >
+        <div class="mb-4 flex items-center justify-between sm:mb-6">
           <div class="flex items-center gap-2 sm:gap-3">
-            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center">
-              <i class="fas fa-layer-group text-white text-sm sm:text-base" />
+            <div
+              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 sm:h-10 sm:w-10 sm:rounded-xl"
+            >
+              <i class="fas fa-layer-group text-sm text-white sm:text-base" />
             </div>
-            <h3 class="text-lg sm:text-xl font-bold text-gray-900">
-              账户分组管理
-            </h3>
+            <h3 class="text-lg font-bold text-gray-900 sm:text-xl">账户分组管理</h3>
           </div>
-          <button 
-            class="text-gray-400 hover:text-gray-600 transition-colors p-1"
+          <button
+            class="p-1 text-gray-400 transition-colors hover:text-gray-600"
             @click="$emit('close')"
           >
             <i class="fas fa-times text-lg sm:text-xl" />
           </button>
         </div>
-        
+
         <!-- 添加分组按钮 -->
         <div class="mb-6">
-          <button
-            class="btn btn-primary px-4 py-2"
-            @click="showCreateForm = true"
-          >
+          <button class="btn btn-primary px-4 py-2" @click="showCreateForm = true">
             <i class="fas fa-plus mr-2" />
             创建新分组
           </button>
         </div>
-        
+
         <!-- 创建分组表单 -->
-        <div
-          v-if="showCreateForm"
-          class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200"
-        >
-          <h4 class="text-lg font-semibold text-gray-900 mb-4">
-            创建新分组
-          </h4>
+        <div v-if="showCreateForm" class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <h4 class="mb-4 text-lg font-semibold text-gray-900">创建新分组</h4>
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">分组名称 *</label>
+              <label class="mb-2 block text-sm font-semibold text-gray-700">分组名称 *</label>
               <input
                 v-model="createForm.name"
-                type="text"
                 class="form-input w-full"
                 placeholder="输入分组名称"
-              >
+                type="text"
+              />
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">平台类型 *</label>
+              <label class="mb-2 block text-sm font-semibold text-gray-700">平台类型 *</label>
               <div class="flex gap-4">
-                <label class="flex items-center cursor-pointer">
-                  <input
-                    v-model="createForm.platform"
-                    type="radio"
-                    value="claude"
-                    class="mr-2"
-                  >
+                <label class="flex cursor-pointer items-center">
+                  <input v-model="createForm.platform" class="mr-2" type="radio" value="claude" />
                   <span class="text-sm text-gray-700">Claude</span>
                 </label>
-                <label class="flex items-center cursor-pointer">
-                  <input
-                    v-model="createForm.platform"
-                    type="radio"
-                    value="gemini"
-                    class="mr-2"
-                  >
+                <label class="flex cursor-pointer items-center">
+                  <input v-model="createForm.platform" class="mr-2" type="radio" value="gemini" />
                   <span class="text-sm text-gray-700">Gemini</span>
                 </label>
               </div>
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">描述 (可选)</label>
+              <label class="mb-2 block text-sm font-semibold text-gray-700">描述 (可选)</label>
               <textarea
                 v-model="createForm.description"
-                rows="2"
                 class="form-input w-full resize-none"
                 placeholder="分组描述..."
+                rows="2"
               />
             </div>
-            
+
             <div class="flex gap-3">
               <button
                 class="btn btn-primary px-4 py-2"
                 :disabled="!createForm.name || !createForm.platform || creating"
                 @click="createGroup"
               >
-                <div
-                  v-if="creating"
-                  class="loading-spinner mr-2"
-                />
+                <div v-if="creating" class="loading-spinner mr-2" />
                 {{ creating ? '创建中...' : '创建' }}
               </button>
-              <button
-                class="btn btn-secondary px-4 py-2"
-                @click="cancelCreate"
-              >
-                取消
-              </button>
+              <button class="btn btn-secondary px-4 py-2" @click="cancelCreate">取消</button>
             </div>
           </div>
         </div>
-        
+
         <!-- 分组列表 -->
         <div class="space-y-4">
-          <div
-            v-if="loading"
-            class="text-center py-8"
-          >
+          <div v-if="loading" class="py-8 text-center">
             <div class="loading-spinner-lg mx-auto mb-4" />
-            <p class="text-gray-500">
-              加载中...
-            </p>
+            <p class="text-gray-500">加载中...</p>
           </div>
-          
-          <div
-            v-else-if="groups.length === 0"
-            class="text-center py-8 bg-gray-50 rounded-lg"
-          >
-            <i class="fas fa-layer-group text-4xl text-gray-300 mb-4" />
-            <p class="text-gray-500">
-              暂无分组
-            </p>
+
+          <div v-else-if="groups.length === 0" class="rounded-lg bg-gray-50 py-8 text-center">
+            <i class="fas fa-layer-group mb-4 text-4xl text-gray-300" />
+            <p class="text-gray-500">暂无分组</p>
           </div>
-          
-          <div
-            v-else
-            class="grid gap-4 grid-cols-1 md:grid-cols-2"
-          >
+
+          <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div
               v-for="group in groups"
               :key="group.id"
-              class="bg-white rounded-lg border p-4 hover:shadow-md transition-shadow"
+              class="rounded-lg border bg-white p-4 transition-shadow hover:shadow-md"
             >
-              <div class="flex items-start justify-between mb-3">
+              <div class="mb-3 flex items-start justify-between">
                 <div class="flex-1">
                   <h4 class="font-semibold text-gray-900">
                     {{ group.name }}
                   </h4>
-                  <p class="text-sm text-gray-500 mt-1">
+                  <p class="mt-1 text-sm text-gray-500">
                     {{ group.description || '暂无描述' }}
                   </p>
                 </div>
-                <div class="flex items-center gap-2 ml-4">
+                <div class="ml-4 flex items-center gap-2">
                   <span
                     :class="[
-                      'px-2 py-1 text-xs font-medium rounded-full',
-                      group.platform === 'claude' 
+                      'rounded-full px-2 py-1 text-xs font-medium',
+                      group.platform === 'claude'
                         ? 'bg-purple-100 text-purple-700'
                         : 'bg-blue-100 text-blue-700'
                     ]"
@@ -161,7 +121,7 @@
                   </span>
                 </div>
               </div>
-              
+
               <div class="flex items-center justify-between text-sm text-gray-600">
                 <div class="flex items-center gap-4">
                   <span>
@@ -175,16 +135,16 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <button
-                    class="text-blue-600 hover:text-blue-800 transition-colors"
+                    class="text-blue-600 transition-colors hover:text-blue-800"
                     title="编辑"
                     @click="editGroup(group)"
                   >
                     <i class="fas fa-edit" />
                   </button>
                   <button
-                    class="text-red-600 hover:text-red-800 transition-colors"
-                    title="删除"
+                    class="text-red-600 transition-colors hover:text-red-800"
                     :disabled="group.memberCount > 0"
+                    title="删除"
                     @click="deleteGroup(group)"
                   >
                     <i class="fas fa-trash" />
@@ -196,72 +156,59 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 编辑分组模态框 -->
     <div
       v-if="showEditForm"
-      class="fixed inset-0 modal z-60 flex items-center justify-center p-3 sm:p-4"
+      class="modal z-60 fixed inset-0 flex items-center justify-center p-3 sm:p-4"
     >
       <div class="modal-content w-full max-w-lg p-4 sm:p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-bold text-gray-900">
-            编辑分组
-          </h3>
-          <button
-            class="text-gray-400 hover:text-gray-600 transition-colors"
-            @click="cancelEdit"
-          >
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-gray-900">编辑分组</h3>
+          <button class="text-gray-400 transition-colors hover:text-gray-600" @click="cancelEdit">
             <i class="fas fa-times" />
           </button>
         </div>
-        
+
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">分组名称 *</label>
+            <label class="mb-2 block text-sm font-semibold text-gray-700">分组名称 *</label>
             <input
               v-model="editForm.name"
-              type="text"
               class="form-input w-full"
               placeholder="输入分组名称"
-            >
-          </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">平台类型</label>
-            <div class="px-3 py-2 bg-gray-100 rounded-lg text-sm text-gray-600">
-              {{ editForm.platform === 'claude' ? 'Claude' : 'Gemini' }}
-              <span class="text-xs text-gray-500 ml-2">(不可修改)</span>
-            </div>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">描述 (可选)</label>
-            <textarea
-              v-model="editForm.description"
-              rows="2"
-              class="form-input w-full resize-none"
-              placeholder="分组描述..."
+              type="text"
             />
           </div>
-          
+
+          <div>
+            <label class="mb-2 block text-sm font-semibold text-gray-700">平台类型</label>
+            <div class="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-600">
+              {{ editForm.platform === 'claude' ? 'Claude' : 'Gemini' }}
+              <span class="ml-2 text-xs text-gray-500">(不可修改)</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-semibold text-gray-700">描述 (可选)</label>
+            <textarea
+              v-model="editForm.description"
+              class="form-input w-full resize-none"
+              placeholder="分组描述..."
+              rows="2"
+            />
+          </div>
+
           <div class="flex gap-3 pt-4">
             <button
-              class="btn btn-primary px-4 py-2 flex-1"
+              class="btn btn-primary flex-1 px-4 py-2"
               :disabled="!editForm.name || updating"
               @click="updateGroup"
             >
-              <div
-                v-if="updating"
-                class="loading-spinner mr-2"
-              />
+              <div v-if="updating" class="loading-spinner mr-2" />
               {{ updating ? '更新中...' : '更新' }}
             </button>
-            <button
-              class="btn btn-secondary px-4 py-2 flex-1"
-              @click="cancelEdit"
-            >
-              取消
-            </button>
+            <button class="btn btn-secondary flex-1 px-4 py-2" @click="cancelEdit">取消</button>
           </div>
         </div>
       </div>
@@ -325,7 +272,7 @@ const createGroup = async () => {
     showToast('请填写必填项', 'error')
     return
   }
-  
+
   creating.value = true
   try {
     await apiClient.post('/admin/account-groups', {
@@ -333,7 +280,7 @@ const createGroup = async () => {
       platform: createForm.value.platform,
       description: createForm.value.description
     })
-    
+
     showToast('分组创建成功', 'success')
     cancelCreate()
     await loadGroups()
@@ -372,14 +319,14 @@ const updateGroup = async () => {
     showToast('请填写分组名称', 'error')
     return
   }
-  
+
   updating.value = true
   try {
     await apiClient.put(`/admin/account-groups/${editingGroup.value.id}`, {
       name: editForm.value.name,
       description: editForm.value.description
     })
-    
+
     showToast('分组更新成功', 'success')
     cancelEdit()
     await loadGroups()
@@ -408,11 +355,11 @@ const deleteGroup = async (group) => {
     showToast('分组内还有成员，无法删除', 'error')
     return
   }
-  
+
   if (!confirm(`确定要删除分组 "${group.name}" 吗？`)) {
     return
   }
-  
+
   try {
     await apiClient.delete(`/admin/account-groups/${group.id}`)
     showToast('分组删除成功', 'success')

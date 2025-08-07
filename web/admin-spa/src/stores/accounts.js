@@ -12,9 +12,9 @@ export const useAccountsStore = defineStore('accounts', () => {
   const error = ref(null)
   const sortBy = ref('')
   const sortOrder = ref('asc')
-  
+
   // Actions
-  
+
   // 获取Claude账户列表
   const fetchClaudeAccounts = async () => {
     loading.value = true
@@ -33,7 +33,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 获取Claude Console账户列表
   const fetchClaudeConsoleAccounts = async () => {
     loading.value = true
@@ -52,7 +52,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 获取Bedrock账户列表
   const fetchBedrockAccounts = async () => {
     loading.value = true
@@ -71,7 +71,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 获取Gemini账户列表
   const fetchGeminiAccounts = async () => {
     loading.value = true
@@ -90,7 +90,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 获取所有账户
   const fetchAllAccounts = async () => {
     loading.value = true
@@ -109,7 +109,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 创建Claude账户
   const createClaudeAccount = async (data) => {
     loading.value = true
@@ -129,7 +129,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 创建Claude Console账户
   const createClaudeConsoleAccount = async (data) => {
     loading.value = true
@@ -149,7 +149,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 创建Bedrock账户
   const createBedrockAccount = async (data) => {
     loading.value = true
@@ -169,7 +169,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 创建Gemini账户
   const createGeminiAccount = async (data) => {
     loading.value = true
@@ -189,7 +189,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 更新Claude账户
   const updateClaudeAccount = async (id, data) => {
     loading.value = true
@@ -209,7 +209,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 更新Claude Console账户
   const updateClaudeConsoleAccount = async (id, data) => {
     loading.value = true
@@ -229,7 +229,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 更新Bedrock账户
   const updateBedrockAccount = async (id, data) => {
     loading.value = true
@@ -249,7 +249,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 更新Gemini账户
   const updateGeminiAccount = async (id, data) => {
     loading.value = true
@@ -269,7 +269,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 切换账户状态
   const toggleAccount = async (platform, id) => {
     loading.value = true
@@ -285,7 +285,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       } else {
         endpoint = `/admin/gemini-accounts/${id}/toggle`
       }
-      
+
       const response = await apiClient.put(endpoint)
       if (response.success) {
         if (platform === 'claude') {
@@ -308,7 +308,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 删除账户
   const deleteAccount = async (platform, id) => {
     loading.value = true
@@ -324,7 +324,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       } else {
         endpoint = `/admin/gemini-accounts/${id}`
       }
-      
+
       const response = await apiClient.delete(endpoint)
       if (response.success) {
         if (platform === 'claude') {
@@ -347,7 +347,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 刷新Claude Token
   const refreshClaudeToken = async (id) => {
     loading.value = true
@@ -367,7 +367,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       loading.value = false
     }
   }
-  
+
   // 生成Claude OAuth URL
   const generateClaudeAuthUrl = async (proxyConfig) => {
     try {
@@ -382,7 +382,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       throw err
     }
   }
-  
+
   // 交换Claude OAuth Code
   const exchangeClaudeCode = async (data) => {
     try {
@@ -397,7 +397,43 @@ export const useAccountsStore = defineStore('accounts', () => {
       throw err
     }
   }
-  
+
+  // 生成Claude Setup Token URL
+  const generateClaudeSetupTokenUrl = async (proxyConfig) => {
+    try {
+      const response = await apiClient.post(
+        '/admin/claude-accounts/generate-setup-token-url',
+        proxyConfig
+      )
+      if (response.success) {
+        return response.data // 返回整个对象，包含authUrl和sessionId
+      } else {
+        throw new Error(response.message || '生成Setup Token URL失败')
+      }
+    } catch (err) {
+      error.value = err.message
+      throw err
+    }
+  }
+
+  // 交换Claude Setup Token Code
+  const exchangeClaudeSetupTokenCode = async (data) => {
+    try {
+      const response = await apiClient.post(
+        '/admin/claude-accounts/exchange-setup-token-code',
+        data
+      )
+      if (response.success) {
+        return response.data
+      } else {
+        throw new Error(response.message || '交换Setup Token授权码失败')
+      }
+    } catch (err) {
+      error.value = err.message
+      throw err
+    }
+  }
+
   // 生成Gemini OAuth URL
   const generateGeminiAuthUrl = async (proxyConfig) => {
     try {
@@ -412,7 +448,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       throw err
     }
   }
-  
+
   // 交换Gemini OAuth Code
   const exchangeGeminiCode = async (data) => {
     try {
@@ -427,8 +463,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       throw err
     }
   }
-  
-  
+
   // 排序账户
   const sortAccounts = (field) => {
     if (sortBy.value === field) {
@@ -438,7 +473,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       sortOrder.value = 'asc'
     }
   }
-  
+
   // 重置store
   const reset = () => {
     claudeAccounts.value = []
@@ -450,7 +485,7 @@ export const useAccountsStore = defineStore('accounts', () => {
     sortBy.value = ''
     sortOrder.value = 'asc'
   }
-  
+
   return {
     // State
     claudeAccounts,
@@ -461,7 +496,7 @@ export const useAccountsStore = defineStore('accounts', () => {
     error,
     sortBy,
     sortOrder,
-    
+
     // Actions
     fetchClaudeAccounts,
     fetchClaudeConsoleAccounts,
@@ -481,6 +516,8 @@ export const useAccountsStore = defineStore('accounts', () => {
     refreshClaudeToken,
     generateClaudeAuthUrl,
     exchangeClaudeCode,
+    generateClaudeSetupTokenUrl,
+    exchangeClaudeSetupTokenCode,
     generateGeminiAuthUrl,
     exchangeGeminiCode,
     sortAccounts,

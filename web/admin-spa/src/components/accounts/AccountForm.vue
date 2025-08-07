@@ -1,331 +1,279 @@
 <template>
   <Teleport to="body">
-    <div
-      v-if="show"
-      class="fixed inset-0 modal z-50 flex items-center justify-center p-3 sm:p-4"
-    >
-      <div class="modal-content w-full max-w-2xl p-4 sm:p-6 md:p-8 mx-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div class="flex items-center justify-between mb-4 sm:mb-6">
+    <div v-if="show" class="modal fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+      <div
+        class="modal-content custom-scrollbar mx-auto max-h-[90vh] w-full max-w-2xl overflow-y-auto p-4 sm:p-6 md:p-8"
+      >
+        <div class="mb-4 flex items-center justify-between sm:mb-6">
           <div class="flex items-center gap-2 sm:gap-3">
-            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg sm:rounded-xl flex items-center justify-center">
-              <i class="fas fa-user-circle text-white text-sm sm:text-base" />
+            <div
+              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-green-600 sm:h-10 sm:w-10 sm:rounded-xl"
+            >
+              <i class="fas fa-user-circle text-sm text-white sm:text-base" />
             </div>
-            <h3 class="text-lg sm:text-xl font-bold text-gray-900">
+            <h3 class="text-lg font-bold text-gray-900 sm:text-xl">
               {{ isEdit ? '编辑账户' : '添加账户' }}
             </h3>
           </div>
-          <button 
-            class="text-gray-400 hover:text-gray-600 transition-colors p-1"
+          <button
+            class="p-1 text-gray-400 transition-colors hover:text-gray-600"
             @click="$emit('close')"
           >
             <i class="fas fa-times text-lg sm:text-xl" />
           </button>
         </div>
-        
+
         <!-- 步骤指示器 -->
         <div
-          v-if="!isEdit && form.addType === 'oauth'"
-          class="flex items-center justify-center mb-4 sm:mb-8"
+          v-if="!isEdit && (form.addType === 'oauth' || form.addType === 'setup-token')"
+          class="mb-4 flex items-center justify-center sm:mb-8"
         >
           <div class="flex items-center space-x-2 sm:space-x-4">
             <div class="flex items-center">
               <div
-                :class="['w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold', 
-                         oauthStep >= 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500']"
+                :class="[
+                  'flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold sm:h-8 sm:w-8 sm:text-sm',
+                  oauthStep >= 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
+                ]"
               >
                 1
               </div>
-              <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm font-medium text-gray-700">基本信息</span>
+              <span class="ml-1.5 text-xs font-medium text-gray-700 sm:ml-2 sm:text-sm"
+                >基本信息</span
+              >
             </div>
-            <div class="w-4 sm:w-8 h-0.5 bg-gray-300" />
+            <div class="h-0.5 w-4 bg-gray-300 sm:w-8" />
             <div class="flex items-center">
               <div
-                :class="['w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold', 
-                         oauthStep >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500']"
+                :class="[
+                  'flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold sm:h-8 sm:w-8 sm:text-sm',
+                  oauthStep >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
+                ]"
               >
                 2
               </div>
-              <span class="ml-1.5 sm:ml-2 text-xs sm:text-sm font-medium text-gray-700">授权认证</span>
+              <span class="ml-1.5 text-xs font-medium text-gray-700 sm:ml-2 sm:text-sm"
+                >授权认证</span
+              >
             </div>
           </div>
         </div>
-        
+
         <!-- 步骤1: 基本信息和代理设置 -->
         <div v-if="oauthStep === 1 && !isEdit">
           <div class="space-y-6">
             <div v-if="!isEdit">
-              <label class="block text-sm font-semibold text-gray-700 mb-3">平台</label>
+              <label class="mb-3 block text-sm font-semibold text-gray-700">平台</label>
               <div class="flex gap-4">
-                <label class="flex items-center cursor-pointer">
-                  <input 
-                    v-model="form.platform" 
-                    type="radio" 
-                    value="claude" 
-                    class="mr-2"
-                  >
+                <label class="flex cursor-pointer items-center">
+                  <input v-model="form.platform" class="mr-2" type="radio" value="claude" />
                   <span class="text-sm text-gray-700">Claude</span>
                 </label>
-                <label class="flex items-center cursor-pointer">
-                  <input 
-                    v-model="form.platform" 
-                    type="radio" 
-                    value="claude-console" 
-                    class="mr-2"
-                  >
+                <label class="flex cursor-pointer items-center">
+                  <input v-model="form.platform" class="mr-2" type="radio" value="claude-console" />
                   <span class="text-sm text-gray-700">Claude Console</span>
                 </label>
-                <label class="flex items-center cursor-pointer">
-                  <input 
-                    v-model="form.platform" 
-                    type="radio" 
-                    value="gemini" 
-                    class="mr-2"
-                  >
+                <label class="flex cursor-pointer items-center">
+                  <input v-model="form.platform" class="mr-2" type="radio" value="gemini" />
                   <span class="text-sm text-gray-700">Gemini</span>
                 </label>
-                <label class="flex items-center cursor-pointer">
-                  <input 
-                    v-model="form.platform" 
-                    type="radio" 
-                    value="bedrock" 
-                    class="mr-2"
-                  >
+                <label class="flex cursor-pointer items-center">
+                  <input v-model="form.platform" class="mr-2" type="radio" value="bedrock" />
                   <span class="text-sm text-gray-700">Bedrock</span>
                 </label>
               </div>
             </div>
-            
-            <div v-if="!isEdit && form.platform !== 'claude-console' && form.platform !== 'bedrock'">
-              <label class="block text-sm font-semibold text-gray-700 mb-3">添加方式</label>
-              <div class="flex gap-4">
-                <label class="flex items-center cursor-pointer">
-                  <input 
-                    v-model="form.addType" 
-                    type="radio" 
-                    value="oauth" 
-                    class="mr-2"
-                  >
-                  <span class="text-sm text-gray-700">OAuth 授权 (推荐)</span>
+
+            <div
+              v-if="!isEdit && form.platform !== 'claude-console' && form.platform !== 'bedrock'"
+            >
+              <label class="mb-3 block text-sm font-semibold text-gray-700">添加方式</label>
+              <div class="flex flex-wrap gap-4">
+                <label class="flex cursor-pointer items-center">
+                  <input v-model="form.addType" class="mr-2" type="radio" value="setup-token" />
+                  <span class="text-sm text-gray-700">Setup Token (推荐)</span>
                 </label>
-                <label class="flex items-center cursor-pointer">
-                  <input 
-                    v-model="form.addType" 
-                    type="radio" 
-                    value="manual" 
-                    class="mr-2"
-                  >
+                <label class="flex cursor-pointer items-center">
+                  <input v-model="form.addType" class="mr-2" type="radio" value="oauth" />
+                  <span class="text-sm text-gray-700">OAuth 授权</span>
+                </label>
+                <label class="flex cursor-pointer items-center">
+                  <input v-model="form.addType" class="mr-2" type="radio" value="manual" />
                   <span class="text-sm text-gray-700">手动输入 Access Token</span>
                 </label>
               </div>
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">账户名称</label>
-              <input 
-                v-model="form.name" 
-                type="text" 
-                required 
+              <label class="mb-3 block text-sm font-semibold text-gray-700">账户名称</label>
+              <input
+                v-model="form.name"
                 class="form-input w-full"
                 :class="{ 'border-red-500': errors.name }"
                 placeholder="为账户设置一个易识别的名称"
-              >
-              <p
-                v-if="errors.name"
-                class="text-red-500 text-xs mt-1"
-              >
+                required
+                type="text"
+              />
+              <p v-if="errors.name" class="mt-1 text-xs text-red-500">
                 {{ errors.name }}
               </p>
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">描述 (可选)</label>
-              <textarea 
-                v-model="form.description" 
-                rows="3" 
+              <label class="mb-3 block text-sm font-semibold text-gray-700">描述 (可选)</label>
+              <textarea
+                v-model="form.description"
                 class="form-input w-full resize-none"
                 placeholder="账户用途说明..."
+                rows="3"
               />
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">账户类型</label>
+              <label class="mb-3 block text-sm font-semibold text-gray-700">账户类型</label>
               <div class="flex gap-4">
-                <label class="flex items-center cursor-pointer">
-                  <input 
-                    v-model="form.accountType" 
-                    type="radio" 
-                    value="shared" 
-                    class="mr-2"
-                  >
+                <label class="flex cursor-pointer items-center">
+                  <input v-model="form.accountType" class="mr-2" type="radio" value="shared" />
                   <span class="text-sm text-gray-700">共享账户</span>
                 </label>
-                <label class="flex items-center cursor-pointer">
-                  <input 
-                    v-model="form.accountType" 
-                    type="radio" 
-                    value="dedicated" 
-                    class="mr-2"
-                  >
+                <label class="flex cursor-pointer items-center">
+                  <input v-model="form.accountType" class="mr-2" type="radio" value="dedicated" />
                   <span class="text-sm text-gray-700">专属账户</span>
                 </label>
-                <label class="flex items-center cursor-pointer">
-                  <input 
-                    v-model="form.accountType" 
-                    type="radio" 
-                    value="group" 
-                    class="mr-2"
-                  >
+                <label class="flex cursor-pointer items-center">
+                  <input v-model="form.accountType" class="mr-2" type="radio" value="group" />
                   <span class="text-sm text-gray-700">分组调度</span>
                 </label>
               </div>
-              <p class="text-xs text-gray-500 mt-2">
-                共享账户：供所有API Key使用；专属账户：仅供特定API Key使用；分组调度：加入分组供分组内调度
+              <p class="mt-2 text-xs text-gray-500">
+                共享账户：供所有API Key使用；专属账户：仅供特定API
+                Key使用；分组调度：加入分组供分组内调度
               </p>
             </div>
-            
+
             <!-- 分组选择器 -->
             <div v-if="form.accountType === 'group'">
-              <label class="block text-sm font-semibold text-gray-700 mb-3">选择分组 *</label>
+              <label class="mb-3 block text-sm font-semibold text-gray-700">选择分组 *</label>
               <div class="flex gap-2">
-                <select 
-                  v-model="form.groupId" 
-                  class="form-input flex-1"
-                  required
-                >
-                  <option value="">
-                    请选择分组
-                  </option>
-                  <option 
-                    v-for="group in filteredGroups" 
-                    :key="group.id" 
-                    :value="group.id"
-                  >
+                <select v-model="form.groupId" class="form-input flex-1" required>
+                  <option value="">请选择分组</option>
+                  <option v-for="group in filteredGroups" :key="group.id" :value="group.id">
                     {{ group.name }} ({{ group.memberCount || 0 }} 个成员)
                   </option>
-                  <option value="__new__">
-                    + 新建分组
-                  </option>
+                  <option value="__new__">+ 新建分组</option>
                 </select>
                 <button
+                  class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   type="button"
-                  class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   @click="refreshGroups"
                 >
-                  <i
-                    class="fas fa-sync-alt"
-                    :class="{ 'animate-spin': loadingGroups }"
-                  />
+                  <i class="fas fa-sync-alt" :class="{ 'animate-spin': loadingGroups }" />
                 </button>
               </div>
             </div>
-            
+
             <!-- Gemini 项目 ID 字段 -->
             <div v-if="form.platform === 'gemini'">
-              <label class="block text-sm font-semibold text-gray-700 mb-3">项目 ID (可选)</label>
-              <input 
-                v-model="form.projectId" 
-                type="text" 
+              <label class="mb-3 block text-sm font-semibold text-gray-700">项目 ID (可选)</label>
+              <input
+                v-model="form.projectId"
                 class="form-input w-full"
                 placeholder="例如：verdant-wares-464411-k9"
-              >
-              <div class="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                type="text"
+              />
+              <div class="mt-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
                 <div class="flex items-start gap-2">
-                  <i class="fas fa-info-circle text-yellow-600 mt-0.5" />
+                  <i class="fas fa-info-circle mt-0.5 text-yellow-600" />
                   <div class="text-xs text-yellow-700">
-                    <p class="font-medium mb-1">
-                      Google Cloud/Workspace 账号需要提供项目 ID
+                    <p class="mb-1 font-medium">Google Cloud/Workspace 账号需要提供项目 ID</p>
+                    <p>
+                      某些 Google 账号（特别是绑定了 Google Cloud 的账号）会被识别为 Workspace
+                      账号，需要提供额外的项目 ID。
                     </p>
-                    <p>某些 Google 账号（特别是绑定了 Google Cloud 的账号）会被识别为 Workspace 账号，需要提供额外的项目 ID。</p>
-                    <div class="mt-2 p-2 bg-white rounded border border-yellow-300">
-                      <p class="font-medium mb-1">
-                        如何获取项目 ID：
-                      </p>
-                      <ol class="list-decimal list-inside space-y-1 ml-2">
+                    <div class="mt-2 rounded border border-yellow-300 bg-white p-2">
+                      <p class="mb-1 font-medium">如何获取项目 ID：</p>
+                      <ol class="ml-2 list-inside list-decimal space-y-1">
                         <li>
-                          访问 <a
+                          访问
+                          <a
+                            class="font-medium text-blue-600 hover:underline"
                             href="https://console.cloud.google.com/welcome"
                             target="_blank"
-                            class="text-blue-600 hover:underline font-medium"
-                          >Google Cloud Console</a>
+                            >Google Cloud Console</a
+                          >
                         </li>
-                        <li>复制<span class="font-semibold text-red-600">项目 ID（Project ID）</span>，通常是字符串格式</li>
+                        <li>
+                          复制<span class="font-semibold text-red-600">项目 ID（Project ID）</span
+                          >，通常是字符串格式
+                        </li>
                         <li class="text-red-600">
                           ⚠️ 注意：要复制项目 ID（Project ID），不要复制项目编号（Project Number）！
                         </li>
                       </ol>
                     </div>
                     <p class="mt-2">
-                      <strong>提示：</strong>如果您的账号是普通个人账号（未绑定 Google Cloud），请留空此字段。
+                      <strong>提示：</strong>如果您的账号是普通个人账号（未绑定 Google
+                      Cloud），请留空此字段。
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <!-- Bedrock 特定字段 -->
-            <div
-              v-if="form.platform === 'bedrock' && !isEdit"
-              class="space-y-4"
-            >
+            <div v-if="form.platform === 'bedrock' && !isEdit" class="space-y-4">
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">AWS 访问密钥 ID *</label>
-                <input 
-                  v-model="form.accessKeyId" 
-                  type="text" 
-                  required
+                <label class="mb-3 block text-sm font-semibold text-gray-700"
+                  >AWS 访问密钥 ID *</label
+                >
+                <input
+                  v-model="form.accessKeyId"
                   class="form-input w-full"
                   :class="{ 'border-red-500': errors.accessKeyId }"
                   placeholder="请输入 AWS Access Key ID"
-                >
-                <p
-                  v-if="errors.accessKeyId"
-                  class="text-red-500 text-xs mt-1"
-                >
+                  required
+                  type="text"
+                />
+                <p v-if="errors.accessKeyId" class="mt-1 text-xs text-red-500">
                   {{ errors.accessKeyId }}
                 </p>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">AWS 秘密访问密钥 *</label>
-                <input 
-                  v-model="form.secretAccessKey" 
-                  type="password" 
-                  required
+                <label class="mb-3 block text-sm font-semibold text-gray-700"
+                  >AWS 秘密访问密钥 *</label
+                >
+                <input
+                  v-model="form.secretAccessKey"
                   class="form-input w-full"
                   :class="{ 'border-red-500': errors.secretAccessKey }"
                   placeholder="请输入 AWS Secret Access Key"
-                >
-                <p
-                  v-if="errors.secretAccessKey"
-                  class="text-red-500 text-xs mt-1"
-                >
+                  required
+                  type="password"
+                />
+                <p v-if="errors.secretAccessKey" class="mt-1 text-xs text-red-500">
                   {{ errors.secretAccessKey }}
                 </p>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">AWS 区域 *</label>
-                <input 
-                  v-model="form.region" 
-                  type="text" 
-                  required
+                <label class="mb-3 block text-sm font-semibold text-gray-700">AWS 区域 *</label>
+                <input
+                  v-model="form.region"
                   class="form-input w-full"
                   :class="{ 'border-red-500': errors.region }"
                   placeholder="例如：us-east-1"
-                >
-                <p
-                  v-if="errors.region"
-                  class="text-red-500 text-xs mt-1"
-                >
+                  required
+                  type="text"
+                />
+                <p v-if="errors.region" class="mt-1 text-xs text-red-500">
                   {{ errors.region }}
                 </p>
-                <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
                   <div class="flex items-start gap-2">
-                    <i class="fas fa-info-circle text-blue-600 mt-0.5" />
+                    <i class="fas fa-info-circle mt-0.5 text-blue-600" />
                     <div class="text-xs text-blue-700">
-                      <p class="font-medium mb-1">
-                        常用 AWS 区域参考：
-                      </p>
+                      <p class="mb-1 font-medium">常用 AWS 区域参考：</p>
                       <div class="grid grid-cols-2 gap-1 text-xs">
                         <span>• us-east-1 (美国东部)</span>
                         <span>• us-west-2 (美国西部)</span>
@@ -334,46 +282,44 @@
                         <span>• ap-northeast-1 (东京)</span>
                         <span>• eu-central-1 (法兰克福)</span>
                       </div>
-                      <p class="mt-2 text-blue-600">
-                        💡 请输入完整的区域代码，如 us-east-1
-                      </p>
+                      <p class="mt-2 text-blue-600">💡 请输入完整的区域代码，如 us-east-1</p>
                     </div>
                   </div>
                 </div>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">会话令牌 (可选)</label>
-                <input 
-                  v-model="form.sessionToken" 
-                  type="password" 
+                <label class="mb-3 block text-sm font-semibold text-gray-700"
+                  >会话令牌 (可选)</label
+                >
+                <input
+                  v-model="form.sessionToken"
                   class="form-input w-full"
                   placeholder="如果使用临时凭证，请输入会话令牌"
-                >
-                <p class="text-xs text-gray-500 mt-1">
-                  仅在使用临时 AWS 凭证时需要填写
-                </p>
+                  type="password"
+                />
+                <p class="mt-1 text-xs text-gray-500">仅在使用临时 AWS 凭证时需要填写</p>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">默认主模型 (可选)</label>
-                <input 
-                  v-model="form.defaultModel" 
-                  type="text" 
+                <label class="mb-3 block text-sm font-semibold text-gray-700"
+                  >默认主模型 (可选)</label
+                >
+                <input
+                  v-model="form.defaultModel"
                   class="form-input w-full"
                   placeholder="例如：us.anthropic.claude-sonnet-4-20250514-v1:0"
-                >
-                <p class="text-xs text-gray-500 mt-1">
+                  type="text"
+                />
+                <p class="mt-1 text-xs text-gray-500">
                   留空将使用系统默认模型。支持 inference profile ID 或 ARN
                 </p>
-                <div class="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <div class="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
                   <div class="flex items-start gap-2">
-                    <i class="fas fa-info-circle text-amber-600 mt-0.5" />
+                    <i class="fas fa-info-circle mt-0.5 text-amber-600" />
                     <div class="text-xs text-amber-700">
-                      <p class="font-medium mb-1">
-                        Bedrock 模型配置说明：
-                      </p>
-                      <ul class="list-disc list-inside space-y-1 text-xs">
+                      <p class="mb-1 font-medium">Bedrock 模型配置说明：</p>
+                      <ul class="list-inside list-disc space-y-1 text-xs">
                         <li>支持 Inference Profile ID（推荐）</li>
                         <li>支持 Application Inference Profile ARN</li>
                         <li>常用模型：us.anthropic.claude-sonnet-4-20250514-v1:0</li>
@@ -383,196 +329,206 @@
                   </div>
                 </div>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">小快速模型 (可选)</label>
-                <input 
-                  v-model="form.smallFastModel" 
-                  type="text" 
+                <label class="mb-3 block text-sm font-semibold text-gray-700"
+                  >小快速模型 (可选)</label
+                >
+                <input
+                  v-model="form.smallFastModel"
                   class="form-input w-full"
                   placeholder="例如：us.anthropic.claude-3-5-haiku-20241022-v1:0"
-                >
-                <p class="text-xs text-gray-500 mt-1">
+                  type="text"
+                />
+                <p class="mt-1 text-xs text-gray-500">
                   用于快速响应的轻量级模型，留空将使用系统默认
                 </p>
               </div>
-              
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">限流时间 (分钟)</label>
-                <input 
-                  v-model.number="form.rateLimitDuration" 
-                  type="number" 
-                  min="1"
-                  class="form-input w-full"
-                  placeholder="默认60分钟"
+                <label class="mb-3 block text-sm font-semibold text-gray-700"
+                  >限流时间 (分钟)</label
                 >
-                <p class="text-xs text-gray-500 mt-1">
+                <input
+                  v-model.number="form.rateLimitDuration"
+                  class="form-input w-full"
+                  min="1"
+                  placeholder="默认60分钟"
+                  type="number"
+                />
+                <p class="mt-1 text-xs text-gray-500">
                   当账号返回429错误时，暂停调度的时间（分钟）
                 </p>
               </div>
             </div>
-            
+
             <!-- Claude Console 特定字段 -->
-            <div
-              v-if="form.platform === 'claude-console' && !isEdit"
-              class="space-y-4"
-            >
+            <div v-if="form.platform === 'claude-console' && !isEdit" class="space-y-4">
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">API URL *</label>
-                <input 
-                  v-model="form.apiUrl" 
-                  type="text" 
-                  required
+                <label class="mb-3 block text-sm font-semibold text-gray-700">API URL *</label>
+                <input
+                  v-model="form.apiUrl"
                   class="form-input w-full"
                   :class="{ 'border-red-500': errors.apiUrl }"
                   placeholder="例如：https://api.example.com"
-                >
-                <p
-                  v-if="errors.apiUrl"
-                  class="text-red-500 text-xs mt-1"
-                >
+                  required
+                  type="text"
+                />
+                <p v-if="errors.apiUrl" class="mt-1 text-xs text-red-500">
                   {{ errors.apiUrl }}
                 </p>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">API Key *</label>
-                <input 
-                  v-model="form.apiKey" 
-                  type="password" 
-                  required
+                <label class="mb-3 block text-sm font-semibold text-gray-700">API Key *</label>
+                <input
+                  v-model="form.apiKey"
                   class="form-input w-full"
                   :class="{ 'border-red-500': errors.apiKey }"
                   placeholder="请输入API Key"
-                >
-                <p
-                  v-if="errors.apiKey"
-                  class="text-red-500 text-xs mt-1"
-                >
+                  required
+                  type="password"
+                />
+                <p v-if="errors.apiKey" class="mt-1 text-xs text-red-500">
                   {{ errors.apiKey }}
                 </p>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">支持的模型 (可选)--注意,ClaudeCode必须加上haiku模型！</label>
+                <label class="mb-3 block text-sm font-semibold text-gray-700"
+                  >支持的模型 (可选)--注意,ClaudeCode必须加上haiku模型！</label
+                >
                 <div class="mb-2 flex gap-2">
                   <button
+                    class="rounded-lg bg-blue-100 px-3 py-1 text-xs text-blue-700 transition-colors hover:bg-blue-200"
                     type="button"
-                    class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
                     @click="addPresetModel('claude-sonnet-4-20250514')"
                   >
                     + claude-sonnet-4-20250514
                   </button>
                   <button
+                    class="rounded-lg bg-purple-100 px-3 py-1 text-xs text-purple-700 transition-colors hover:bg-purple-200"
                     type="button"
-                    class="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
                     @click="addPresetModel('claude-opus-4-20250514')"
                   >
                     + claude-opus-4-20250514
                   </button>
                   <button
+                    class="rounded-lg bg-green-100 px-3 py-1 text-xs text-green-700 transition-colors hover:bg-purple-200"
                     type="button"
-                    class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-purple-200 transition-colors"
                     @click="addPresetModel('claude-3-5-haiku-20241022')"
                   >
                     + claude-3-5-haiku-20241022
                   </button>
                 </div>
-                <textarea 
-                  v-model="form.supportedModels" 
-                  rows="3" 
+                <textarea
+                  v-model="form.supportedModels"
                   class="form-input w-full resize-none"
                   placeholder="每行一个模型，留空表示支持所有模型。特别注意,ClaudeCode必须加上haiku模型！"
+                  rows="3"
                 />
-                <p class="text-xs text-gray-500 mt-1">
+                <p class="mt-1 text-xs text-gray-500">
                   留空表示支持所有模型。如果指定模型，请求中的模型不在列表内将不会调度到此账号
                 </p>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">自定义 User-Agent (可选)</label>
-                <input 
-                  v-model="form.userAgent" 
-                  type="text" 
-                  class="form-input w-full"
-                  placeholder="默认：claude-cli/1.0.61 (console, cli)"
+                <label class="mb-3 block text-sm font-semibold text-gray-700"
+                  >自定义 User-Agent (可选)</label
                 >
+                <input
+                  v-model="form.userAgent"
+                  class="form-input w-full"
+                  placeholder="留空则透传客户端 User-Agent"
+                  type="text"
+                />
+                <p class="mt-1 text-xs text-gray-500">
+                  留空时将自动使用客户端的 User-Agent，仅在需要固定特定 UA 时填写
+                </p>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">限流时间 (分钟)</label>
-                <input 
-                  v-model.number="form.rateLimitDuration" 
-                  type="number" 
-                  min="1"
-                  class="form-input w-full"
-                  placeholder="默认60分钟"
+                <label class="mb-3 block text-sm font-semibold text-gray-700"
+                  >限流时间 (分钟)</label
                 >
-                <p class="text-xs text-gray-500 mt-1">
+                <input
+                  v-model.number="form.rateLimitDuration"
+                  class="form-input w-full"
+                  min="1"
+                  placeholder="默认60分钟"
+                  type="number"
+                />
+                <p class="mt-1 text-xs text-gray-500">
                   当账号返回429错误时，暂停调度的时间（分钟）
                 </p>
               </div>
             </div>
-            
+
             <!-- Claude、Claude Console和Bedrock的优先级设置 -->
-            <div v-if="(form.platform === 'claude' || form.platform === 'claude-console' || form.platform === 'bedrock')">
-              <label class="block text-sm font-semibold text-gray-700 mb-3">调度优先级 (1-100)</label>
-              <input 
-                v-model.number="form.priority" 
-                type="number" 
-                min="1"
-                max="100"
-                class="form-input w-full"
-                placeholder="数字越小优先级越高，默认50"
+            <div
+              v-if="
+                form.platform === 'claude' ||
+                form.platform === 'claude-console' ||
+                form.platform === 'bedrock'
+              "
+            >
+              <label class="mb-3 block text-sm font-semibold text-gray-700"
+                >调度优先级 (1-100)</label
               >
-              <p class="text-xs text-gray-500 mt-1">
-                数字越小优先级越高，建议范围：1-100
-              </p>
+              <input
+                v-model.number="form.priority"
+                class="form-input w-full"
+                max="100"
+                min="1"
+                placeholder="数字越小优先级越高，默认50"
+                type="number"
+              />
+              <p class="mt-1 text-xs text-gray-500">数字越小优先级越高，建议范围：1-100</p>
             </div>
-            
+
             <!-- 手动输入 Token 字段 -->
             <div
-              v-if="form.addType === 'manual' && form.platform !== 'claude-console' && form.platform !== 'bedrock'"
-              class="space-y-4 bg-blue-50 p-4 rounded-lg border border-blue-200"
+              v-if="
+                form.addType === 'manual' &&
+                form.platform !== 'claude-console' &&
+                form.platform !== 'bedrock'
+              "
+              class="space-y-4 rounded-lg border border-blue-200 bg-blue-50 p-4"
             >
-              <div class="flex items-start gap-3 mb-4">
-                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                  <i class="fas fa-info text-white text-sm" />
+              <div class="mb-4 flex items-start gap-3">
+                <div
+                  class="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-500"
+                >
+                  <i class="fas fa-info text-sm text-white" />
                 </div>
                 <div>
-                  <h5 class="font-semibold text-blue-900 mb-2">
-                    手动输入 Token
-                  </h5>
-                  <p
-                    v-if="form.platform === 'claude'"
-                    class="text-sm text-blue-800 mb-2"
-                  >
-                    请输入有效的 Claude Access Token。如果您有 Refresh Token，建议也一并填写以支持自动刷新。
+                  <h5 class="mb-2 font-semibold text-blue-900">手动输入 Token</h5>
+                  <p v-if="form.platform === 'claude'" class="mb-2 text-sm text-blue-800">
+                    请输入有效的 Claude Access Token。如果您有 Refresh
+                    Token，建议也一并填写以支持自动刷新。
                   </p>
-                  <p
-                    v-else-if="form.platform === 'gemini'"
-                    class="text-sm text-blue-800 mb-2"
-                  >
-                    请输入有效的 Gemini Access Token。如果您有 Refresh Token，建议也一并填写以支持自动刷新。
+                  <p v-else-if="form.platform === 'gemini'" class="mb-2 text-sm text-blue-800">
+                    请输入有效的 Gemini Access Token。如果您有 Refresh
+                    Token，建议也一并填写以支持自动刷新。
                   </p>
-                  <div class="bg-white/80 rounded-lg p-3 mt-2 mb-2 border border-blue-300">
-                    <p class="text-sm text-blue-900 font-medium mb-1">
+                  <div class="mb-2 mt-2 rounded-lg border border-blue-300 bg-white/80 p-3">
+                    <p class="mb-1 text-sm font-medium text-blue-900">
                       <i class="fas fa-folder-open mr-1" />
                       获取 Access Token 的方法：
                     </p>
-                    <p
-                      v-if="form.platform === 'claude'"
-                      class="text-xs text-blue-800"
-                    >
-                      请从已登录 Claude Code 的机器上获取 <code class="bg-blue-100 px-1 py-0.5 rounded font-mono">~/.claude/.credentials.json</code> 文件中的凭证，
-                      请勿使用 Claude 官网 API Keys 页面的密钥。
+                    <p v-if="form.platform === 'claude'" class="text-xs text-blue-800">
+                      请从已登录 Claude Code 的机器上获取
+                      <code class="rounded bg-blue-100 px-1 py-0.5 font-mono"
+                        >~/.claude/.credentials.json</code
+                      >
+                      文件中的凭证， 请勿使用 Claude 官网 API Keys 页面的密钥。
                     </p>
-                    <p
-                      v-else-if="form.platform === 'gemini'"
-                      class="text-xs text-blue-800"
-                    >
-                      请从已登录 Gemini CLI 的机器上获取 <code class="bg-blue-100 px-1 py-0.5 rounded font-mono">~/.config/gemini/credentials.json</code> 文件中的凭证。
+                    <p v-else-if="form.platform === 'gemini'" class="text-xs text-blue-800">
+                      请从已登录 Gemini CLI 的机器上获取
+                      <code class="rounded bg-blue-100 px-1 py-0.5 font-mono"
+                        >~/.config/gemini/credentials.json</code
+                      >
+                      文件中的凭证。
                     </p>
                   </div>
                   <p class="text-xs text-blue-600">
@@ -580,340 +536,455 @@
                   </p>
                 </div>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">Access Token *</label>
-                <textarea 
-                  v-model="form.accessToken" 
-                  rows="4" 
-                  required
+                <label class="mb-3 block text-sm font-semibold text-gray-700">Access Token *</label>
+                <textarea
+                  v-model="form.accessToken"
                   class="form-input w-full resize-none font-mono text-xs"
                   :class="{ 'border-red-500': errors.accessToken }"
                   placeholder="请输入 Access Token..."
+                  required
+                  rows="4"
                 />
-                <p
-                  v-if="errors.accessToken"
-                  class="text-red-500 text-xs mt-1"
-                >
+                <p v-if="errors.accessToken" class="mt-1 text-xs text-red-500">
                   {{ errors.accessToken }}
                 </p>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">Refresh Token (可选)</label>
-                <textarea 
-                  v-model="form.refreshToken" 
-                  rows="4" 
+                <label class="mb-3 block text-sm font-semibold text-gray-700"
+                  >Refresh Token (可选)</label
+                >
+                <textarea
+                  v-model="form.refreshToken"
                   class="form-input w-full resize-none font-mono text-xs"
                   placeholder="请输入 Refresh Token..."
+                  rows="4"
                 />
               </div>
             </div>
-            
+
             <!-- 代理设置 -->
             <ProxyConfig v-model="form.proxy" />
-            
+
             <div class="flex gap-3 pt-4">
-              <button 
-                type="button" 
-                class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors" 
+              <button
+                class="flex-1 rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+                type="button"
                 @click="$emit('close')"
               >
                 取消
               </button>
-              <button 
-                v-if="form.addType === 'oauth' && form.platform !== 'claude-console' && form.platform !== 'bedrock'"
-                type="button" 
+              <button
+                v-if="
+                  (form.addType === 'oauth' || form.addType === 'setup-token') &&
+                  form.platform !== 'claude-console' &&
+                  form.platform !== 'bedrock'
+                "
+                class="btn btn-primary flex-1 px-6 py-3 font-semibold"
                 :disabled="loading"
-                class="btn btn-primary flex-1 py-3 px-6 font-semibold"
+                type="button"
                 @click="nextStep"
               >
                 下一步
               </button>
-              <button 
+              <button
                 v-else
-                type="button" 
+                class="btn btn-primary flex-1 px-6 py-3 font-semibold"
                 :disabled="loading"
-                class="btn btn-primary flex-1 py-3 px-6 font-semibold"
+                type="button"
                 @click="createAccount"
               >
-                <div
-                  v-if="loading"
-                  class="loading-spinner mr-2"
-                />
+                <div v-if="loading" class="loading-spinner mr-2" />
                 {{ loading ? '创建中...' : '创建' }}
               </button>
             </div>
           </div>
         </div>
-        
+
         <!-- 步骤2: OAuth授权 -->
-        <OAuthFlow 
+        <OAuthFlow
           v-if="oauthStep === 2 && form.addType === 'oauth'"
           :platform="form.platform"
           :proxy="form.proxy"
-          @success="handleOAuthSuccess"
           @back="oauthStep = 1"
+          @success="handleOAuthSuccess"
         />
-        
+
+        <!-- 步骤2: Setup Token授权 -->
+        <div v-if="oauthStep === 2 && form.addType === 'setup-token'" class="space-y-6">
+          <!-- Claude Setup Token流程 -->
+          <div v-if="form.platform === 'claude'">
+            <div class="rounded-lg border border-blue-200 bg-blue-50 p-6">
+              <div class="flex items-start gap-4">
+                <div
+                  class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-500"
+                >
+                  <i class="fas fa-key text-white" />
+                </div>
+                <div class="flex-1">
+                  <h4 class="mb-3 font-semibold text-blue-900">Claude Setup Token 授权</h4>
+                  <p class="mb-4 text-sm text-blue-800">
+                    请按照以下步骤通过 Setup Token 完成 Claude 账户的授权：
+                  </p>
+
+                  <div class="space-y-4">
+                    <!-- 步骤1: 生成授权链接 -->
+                    <div class="rounded-lg border border-blue-300 bg-white/80 p-4">
+                      <div class="flex items-start gap-3">
+                        <div
+                          class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white"
+                        >
+                          1
+                        </div>
+                        <div class="flex-1">
+                          <p class="mb-2 font-medium text-blue-900">点击下方按钮生成授权链接</p>
+                          <button
+                            v-if="!setupTokenAuthUrl"
+                            class="btn btn-primary px-4 py-2 text-sm"
+                            :disabled="setupTokenLoading"
+                            @click="generateSetupTokenAuthUrl"
+                          >
+                            <i v-if="!setupTokenLoading" class="fas fa-link mr-2" />
+                            <div v-else class="loading-spinner mr-2" />
+                            {{ setupTokenLoading ? '生成中...' : '生成 Setup Token 授权链接' }}
+                          </button>
+                          <div v-else class="space-y-3">
+                            <div class="flex items-center gap-2">
+                              <input
+                                class="form-input flex-1 bg-gray-50 font-mono text-xs"
+                                readonly
+                                type="text"
+                                :value="setupTokenAuthUrl"
+                              />
+                              <button
+                                class="rounded-lg bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200"
+                                title="复制链接"
+                                @click="copySetupTokenAuthUrl"
+                              >
+                                <i
+                                  :class="
+                                    setupTokenCopied ? 'fas fa-check text-green-500' : 'fas fa-copy'
+                                  "
+                                />
+                              </button>
+                            </div>
+                            <button
+                              class="text-xs text-blue-600 hover:text-blue-700"
+                              @click="regenerateSetupTokenAuthUrl"
+                            >
+                              <i class="fas fa-sync-alt mr-1" />重新生成
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 步骤2: 访问链接并授权 -->
+                    <div class="rounded-lg border border-blue-300 bg-white/80 p-4">
+                      <div class="flex items-start gap-3">
+                        <div
+                          class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white"
+                        >
+                          2
+                        </div>
+                        <div class="flex-1">
+                          <p class="mb-2 font-medium text-blue-900">在浏览器中打开链接并完成授权</p>
+                          <p class="mb-2 text-sm text-blue-700">
+                            请在新标签页中打开授权链接，登录您的 Claude 账户并授权 Claude Code。
+                          </p>
+                          <div class="rounded border border-yellow-300 bg-yellow-50 p-3">
+                            <p class="text-xs text-yellow-800">
+                              <i class="fas fa-exclamation-triangle mr-1" />
+                              <strong>注意：</strong
+                              >如果您设置了代理，请确保浏览器也使用相同的代理访问授权页面。
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 步骤3: 输入授权码 -->
+                    <div class="rounded-lg border border-blue-300 bg-white/80 p-4">
+                      <div class="flex items-start gap-3">
+                        <div
+                          class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white"
+                        >
+                          3
+                        </div>
+                        <div class="flex-1">
+                          <p class="mb-2 font-medium text-blue-900">输入 Authorization Code</p>
+                          <p class="mb-3 text-sm text-blue-700">
+                            授权完成后，从返回页面复制 Authorization Code，并粘贴到下方输入框：
+                          </p>
+                          <div class="space-y-3">
+                            <div>
+                              <label class="mb-2 block text-sm font-semibold text-gray-700">
+                                <i class="fas fa-key mr-2 text-blue-500" />Authorization Code
+                              </label>
+                              <textarea
+                                v-model="setupTokenAuthCode"
+                                class="form-input w-full resize-none font-mono text-sm"
+                                placeholder="粘贴从Claude Code授权页面获取的Authorization Code..."
+                                rows="3"
+                              />
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">
+                              <i class="fas fa-info-circle mr-1" />
+                              请粘贴从Claude Code授权页面复制的Authorization Code
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button
+              class="flex-1 rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+              type="button"
+              @click="oauthStep = 1"
+            >
+              上一步
+            </button>
+            <button
+              class="btn btn-primary flex-1 px-6 py-3 font-semibold"
+              :disabled="!canExchangeSetupToken || setupTokenExchanging"
+              type="button"
+              @click="exchangeSetupTokenCode"
+            >
+              <div v-if="setupTokenExchanging" class="loading-spinner mr-2" />
+              {{ setupTokenExchanging ? '验证中...' : '完成授权' }}
+            </button>
+          </div>
+        </div>
+
         <!-- 编辑模式 -->
-        <div
-          v-if="isEdit"
-          class="space-y-6"
-        >
+        <div v-if="isEdit" class="space-y-6">
           <!-- 基本信息 -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-3">账户名称</label>
-            <input 
-              v-model="form.name" 
-              type="text" 
-              required 
+            <label class="mb-3 block text-sm font-semibold text-gray-700">账户名称</label>
+            <input
+              v-model="form.name"
               class="form-input w-full"
               placeholder="为账户设置一个易识别的名称"
-            >
-          </div>
-          
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-3">描述 (可选)</label>
-            <textarea 
-              v-model="form.description" 
-              rows="3" 
-              class="form-input w-full resize-none"
-              placeholder="账户用途说明..."
+              required
+              type="text"
             />
           </div>
-          
+
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-3">账户类型</label>
+            <label class="mb-3 block text-sm font-semibold text-gray-700">描述 (可选)</label>
+            <textarea
+              v-model="form.description"
+              class="form-input w-full resize-none"
+              placeholder="账户用途说明..."
+              rows="3"
+            />
+          </div>
+
+          <div>
+            <label class="mb-3 block text-sm font-semibold text-gray-700">账户类型</label>
             <div class="flex gap-4">
-              <label class="flex items-center cursor-pointer">
-                <input 
-                  v-model="form.accountType" 
-                  type="radio" 
-                  value="shared" 
-                  class="mr-2"
-                >
+              <label class="flex cursor-pointer items-center">
+                <input v-model="form.accountType" class="mr-2" type="radio" value="shared" />
                 <span class="text-sm text-gray-700">共享账户</span>
               </label>
-              <label class="flex items-center cursor-pointer">
-                <input 
-                  v-model="form.accountType" 
-                  type="radio" 
-                  value="dedicated" 
-                  class="mr-2"
-                >
+              <label class="flex cursor-pointer items-center">
+                <input v-model="form.accountType" class="mr-2" type="radio" value="dedicated" />
                 <span class="text-sm text-gray-700">专属账户</span>
               </label>
-              <label class="flex items-center cursor-pointer">
-                <input 
-                  v-model="form.accountType" 
-                  type="radio" 
-                  value="group" 
-                  class="mr-2"
-                >
+              <label class="flex cursor-pointer items-center">
+                <input v-model="form.accountType" class="mr-2" type="radio" value="group" />
                 <span class="text-sm text-gray-700">分组调度</span>
               </label>
             </div>
-            <p class="text-xs text-gray-500 mt-2">
-              共享账户：供所有API Key使用；专属账户：仅供特定API Key使用；分组调度：加入分组供分组内调度
+            <p class="mt-2 text-xs text-gray-500">
+              共享账户：供所有API Key使用；专属账户：仅供特定API
+              Key使用；分组调度：加入分组供分组内调度
             </p>
           </div>
-          
+
           <!-- 分组选择器 -->
           <div v-if="form.accountType === 'group'">
-            <label class="block text-sm font-semibold text-gray-700 mb-3">选择分组 *</label>
+            <label class="mb-3 block text-sm font-semibold text-gray-700">选择分组 *</label>
             <div class="flex gap-2">
-              <select 
-                v-model="form.groupId" 
-                class="form-input flex-1"
-                required
-              >
-                <option value="">
-                  请选择分组
-                </option>
-                <option 
-                  v-for="group in filteredGroups" 
-                  :key="group.id" 
-                  :value="group.id"
-                >
+              <select v-model="form.groupId" class="form-input flex-1" required>
+                <option value="">请选择分组</option>
+                <option v-for="group in filteredGroups" :key="group.id" :value="group.id">
                   {{ group.name }} ({{ group.memberCount || 0 }} 个成员)
                 </option>
-                <option value="__new__">
-                  + 新建分组
-                </option>
+                <option value="__new__">+ 新建分组</option>
               </select>
               <button
+                class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 type="button"
-                class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 @click="refreshGroups"
               >
-                <i
-                  class="fas fa-sync-alt"
-                  :class="{ 'animate-spin': loadingGroups }"
-                />
+                <i class="fas fa-sync-alt" :class="{ 'animate-spin': loadingGroups }" />
               </button>
             </div>
           </div>
-          
+
           <!-- Gemini 项目 ID 字段 -->
           <div v-if="form.platform === 'gemini'">
-            <label class="block text-sm font-semibold text-gray-700 mb-3">项目 ID (可选)</label>
-            <input 
-              v-model="form.projectId" 
-              type="text" 
+            <label class="mb-3 block text-sm font-semibold text-gray-700">项目 ID (可选)</label>
+            <input
+              v-model="form.projectId"
               class="form-input w-full"
               placeholder="例如：verdant-wares-464411-k9"
-            >
-            <p class="text-xs text-gray-500 mt-2">
-              Google Cloud/Workspace 账号可能需要提供项目 ID
-            </p>
+              type="text"
+            />
+            <p class="mt-2 text-xs text-gray-500">Google Cloud/Workspace 账号可能需要提供项目 ID</p>
           </div>
-          
+
           <!-- Claude、Claude Console和Bedrock的优先级设置（编辑模式） -->
-          <div v-if="(form.platform === 'claude' || form.platform === 'claude-console' || form.platform === 'bedrock')">
-            <label class="block text-sm font-semibold text-gray-700 mb-3">调度优先级 (1-100)</label>
-            <input 
-              v-model.number="form.priority" 
-              type="number" 
-              min="1"
-              max="100"
-              class="form-input w-full"
-              placeholder="数字越小优先级越高"
-            >
-            <p class="text-xs text-gray-500 mt-1">
-              数字越小优先级越高，建议范围：1-100
-            </p>
-          </div>
-          
-          <!-- Claude Console 特定字段（编辑模式）-->
           <div
-            v-if="form.platform === 'claude-console'"
-            class="space-y-4"
+            v-if="
+              form.platform === 'claude' ||
+              form.platform === 'claude-console' ||
+              form.platform === 'bedrock'
+            "
           >
+            <label class="mb-3 block text-sm font-semibold text-gray-700">调度优先级 (1-100)</label>
+            <input
+              v-model.number="form.priority"
+              class="form-input w-full"
+              max="100"
+              min="1"
+              placeholder="数字越小优先级越高"
+              type="number"
+            />
+            <p class="mt-1 text-xs text-gray-500">数字越小优先级越高，建议范围：1-100</p>
+          </div>
+
+          <!-- Claude Console 特定字段（编辑模式）-->
+          <div v-if="form.platform === 'claude-console'" class="space-y-4">
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">API URL</label>
-              <input 
-                v-model="form.apiUrl" 
-                type="text" 
-                required
+              <label class="mb-3 block text-sm font-semibold text-gray-700">API URL</label>
+              <input
+                v-model="form.apiUrl"
                 class="form-input w-full"
                 placeholder="例如：https://api.example.com"
-              >
+                required
+                type="text"
+              />
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">API Key</label>
-              <input 
-                v-model="form.apiKey" 
-                type="password" 
+              <label class="mb-3 block text-sm font-semibold text-gray-700">API Key</label>
+              <input
+                v-model="form.apiKey"
                 class="form-input w-full"
                 placeholder="留空表示不更新"
-              >
-              <p class="text-xs text-gray-500 mt-1">
-                留空表示不更新 API Key
-              </p>
+                type="password"
+              />
+              <p class="mt-1 text-xs text-gray-500">留空表示不更新 API Key</p>
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">支持的模型 (可选)</label>
+              <label class="mb-3 block text-sm font-semibold text-gray-700"
+                >支持的模型 (可选)</label
+              >
               <div class="mb-2 flex gap-2">
                 <button
+                  class="rounded-lg bg-blue-100 px-3 py-1 text-xs text-blue-700 transition-colors hover:bg-blue-200"
                   type="button"
-                  class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
                   @click="addPresetModel('claude-sonnet-4-20250514')"
                 >
                   + claude-sonnet-4-20250514
                 </button>
                 <button
+                  class="rounded-lg bg-purple-100 px-3 py-1 text-xs text-purple-700 transition-colors hover:bg-purple-200"
                   type="button"
-                  class="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
                   @click="addPresetModel('claude-opus-4-20250514')"
                 >
                   + claude-opus-4-20250514
                 </button>
                 <button
+                  class="rounded-lg bg-green-100 px-3 py-1 text-xs text-green-700 transition-colors hover:bg-purple-200"
                   type="button"
-                  class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-purple-200 transition-colors"
                   @click="addPresetModel('claude-3-5-haiku-20241022')"
                 >
                   + claude-3-5-haiku-20241022
                 </button>
               </div>
-              <textarea 
-                v-model="form.supportedModels" 
-                rows="3" 
+              <textarea
+                v-model="form.supportedModels"
                 class="form-input w-full resize-none"
                 placeholder="每行一个模型，留空表示支持所有模型。特别注意,ClaudeCode必须加上haiku模型！"
+                rows="3"
               />
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">自定义 User-Agent (可选)</label>
-              <input 
-                v-model="form.userAgent" 
-                type="text" 
-                class="form-input w-full"
-                placeholder="默认：claude-cli/1.0.61 (console, cli)"
+              <label class="mb-3 block text-sm font-semibold text-gray-700"
+                >自定义 User-Agent (可选)</label
               >
+              <input
+                v-model="form.userAgent"
+                class="form-input w-full"
+                placeholder="留空则透传客户端 User-Agent"
+                type="text"
+              />
+              <p class="mt-1 text-xs text-gray-500">
+                留空时将自动使用客户端的 User-Agent，仅在需要固定特定 UA 时填写
+              </p>
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">限流时间 (分钟)</label>
-              <input 
-                v-model.number="form.rateLimitDuration" 
-                type="number" 
-                min="1"
+              <label class="mb-3 block text-sm font-semibold text-gray-700">限流时间 (分钟)</label>
+              <input
+                v-model.number="form.rateLimitDuration"
                 class="form-input w-full"
-              >
+                min="1"
+                type="number"
+              />
             </div>
           </div>
-          
+
           <!-- Bedrock 特定字段（编辑模式）-->
-          <div
-            v-if="form.platform === 'bedrock'"
-            class="space-y-4"
-          >
+          <div v-if="form.platform === 'bedrock'" class="space-y-4">
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">AWS 访问密钥 ID</label>
-              <input 
-                v-model="form.accessKeyId" 
-                type="text" 
+              <label class="mb-3 block text-sm font-semibold text-gray-700">AWS 访问密钥 ID</label>
+              <input
+                v-model="form.accessKeyId"
                 class="form-input w-full"
                 placeholder="留空表示不更新"
-              >
-              <p class="text-xs text-gray-500 mt-1">
-                留空表示不更新 AWS Access Key ID
-              </p>
+                type="text"
+              />
+              <p class="mt-1 text-xs text-gray-500">留空表示不更新 AWS Access Key ID</p>
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">AWS 秘密访问密钥</label>
-              <input 
-                v-model="form.secretAccessKey" 
-                type="password" 
+              <label class="mb-3 block text-sm font-semibold text-gray-700">AWS 秘密访问密钥</label>
+              <input
+                v-model="form.secretAccessKey"
                 class="form-input w-full"
                 placeholder="留空表示不更新"
-              >
-              <p class="text-xs text-gray-500 mt-1">
-                留空表示不更新 AWS Secret Access Key
-              </p>
+                type="password"
+              />
+              <p class="mt-1 text-xs text-gray-500">留空表示不更新 AWS Secret Access Key</p>
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">AWS 区域</label>
-              <input 
-                v-model="form.region" 
-                type="text" 
+              <label class="mb-3 block text-sm font-semibold text-gray-700">AWS 区域</label>
+              <input
+                v-model="form.region"
                 class="form-input w-full"
                 placeholder="例如：us-east-1"
-              >
-              <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                type="text"
+              />
+              <div class="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
                 <div class="flex items-start gap-2">
-                  <i class="fas fa-info-circle text-blue-600 mt-0.5" />
+                  <i class="fas fa-info-circle mt-0.5 text-blue-600" />
                   <div class="text-xs text-blue-700">
-                    <p class="font-medium mb-1">
-                      常用 AWS 区域参考：
-                    </p>
+                    <p class="mb-1 font-medium">常用 AWS 区域参考：</p>
                     <div class="grid grid-cols-2 gap-1 text-xs">
                       <span>• us-east-1 (美国东部)</span>
                       <span>• us-west-2 (美国西部)</span>
@@ -926,138 +997,139 @@
                 </div>
               </div>
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">会话令牌 (可选)</label>
-              <input 
-                v-model="form.sessionToken" 
-                type="password" 
+              <label class="mb-3 block text-sm font-semibold text-gray-700">会话令牌 (可选)</label>
+              <input
+                v-model="form.sessionToken"
                 class="form-input w-full"
                 placeholder="留空表示不更新"
-              >
+                type="password"
+              />
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">默认主模型 (可选)</label>
-              <input 
-                v-model="form.defaultModel" 
-                type="text" 
+              <label class="mb-3 block text-sm font-semibold text-gray-700"
+                >默认主模型 (可选)</label
+              >
+              <input
+                v-model="form.defaultModel"
                 class="form-input w-full"
                 placeholder="例如：us.anthropic.claude-sonnet-4-20250514-v1:0"
-              >
-              <p class="text-xs text-gray-500 mt-1">
+                type="text"
+              />
+              <p class="mt-1 text-xs text-gray-500">
                 留空将使用系统默认模型。支持 inference profile ID 或 ARN
               </p>
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">小快速模型 (可选)</label>
-              <input 
-                v-model="form.smallFastModel" 
-                type="text" 
+              <label class="mb-3 block text-sm font-semibold text-gray-700"
+                >小快速模型 (可选)</label
+              >
+              <input
+                v-model="form.smallFastModel"
                 class="form-input w-full"
                 placeholder="例如：us.anthropic.claude-3-5-haiku-20241022-v1:0"
-              >
-              <p class="text-xs text-gray-500 mt-1">
-                用于快速响应的轻量级模型，留空将使用系统默认
-              </p>
+                type="text"
+              />
+              <p class="mt-1 text-xs text-gray-500">用于快速响应的轻量级模型，留空将使用系统默认</p>
             </div>
-            
+
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-3">限流时间 (分钟)</label>
-              <input 
-                v-model.number="form.rateLimitDuration" 
-                type="number" 
-                min="1"
+              <label class="mb-3 block text-sm font-semibold text-gray-700">限流时间 (分钟)</label>
+              <input
+                v-model.number="form.rateLimitDuration"
                 class="form-input w-full"
-              >
+                min="1"
+                type="number"
+              />
             </div>
           </div>
-          
+
           <!-- Token 更新 -->
           <div
             v-if="form.platform !== 'claude-console' && form.platform !== 'bedrock'"
-            class="bg-amber-50 p-4 rounded-lg border border-amber-200"
+            class="rounded-lg border border-amber-200 bg-amber-50 p-4"
           >
-            <div class="flex items-start gap-3 mb-4">
-              <div class="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                <i class="fas fa-key text-white text-sm" />
+            <div class="mb-4 flex items-start gap-3">
+              <div
+                class="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-amber-500"
+              >
+                <i class="fas fa-key text-sm text-white" />
               </div>
               <div>
-                <h5 class="font-semibold text-amber-900 mb-2">
-                  更新 Token
-                </h5>
-                <p class="text-sm text-amber-800 mb-2">
+                <h5 class="mb-2 font-semibold text-amber-900">更新 Token</h5>
+                <p class="mb-2 text-sm text-amber-800">
                   可以更新 Access Token 和 Refresh Token。为了安全起见，不会显示当前的 Token 值。
                 </p>
-                <p class="text-xs text-amber-600">
-                  💡 留空表示不更新该字段。
-                </p>
+                <p class="text-xs text-amber-600">💡 留空表示不更新该字段。</p>
               </div>
             </div>
-            
+
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">新的 Access Token</label>
-                <textarea 
-                  v-model="form.accessToken" 
-                  rows="4" 
+                <label class="mb-3 block text-sm font-semibold text-gray-700"
+                  >新的 Access Token</label
+                >
+                <textarea
+                  v-model="form.accessToken"
                   class="form-input w-full resize-none font-mono text-xs"
                   placeholder="留空表示不更新..."
+                  rows="4"
                 />
               </div>
-              
+
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">新的 Refresh Token</label>
-                <textarea 
-                  v-model="form.refreshToken" 
-                  rows="4" 
+                <label class="mb-3 block text-sm font-semibold text-gray-700"
+                  >新的 Refresh Token</label
+                >
+                <textarea
+                  v-model="form.refreshToken"
                   class="form-input w-full resize-none font-mono text-xs"
                   placeholder="留空表示不更新..."
+                  rows="4"
                 />
               </div>
             </div>
           </div>
-          
+
           <!-- 代理设置 -->
           <ProxyConfig v-model="form.proxy" />
-          
+
           <div class="flex gap-3 pt-4">
-            <button 
-              type="button" 
-              class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors" 
+            <button
+              class="flex-1 rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+              type="button"
               @click="$emit('close')"
             >
               取消
             </button>
-            <button 
-              type="button" 
+            <button
+              class="btn btn-primary flex-1 px-6 py-3 font-semibold"
               :disabled="loading"
-              class="btn btn-primary flex-1 py-3 px-6 font-semibold"
+              type="button"
               @click="updateAccount"
             >
-              <div
-                v-if="loading"
-                class="loading-spinner mr-2"
-              />
+              <div v-if="loading" class="loading-spinner mr-2" />
               {{ loading ? '更新中...' : '更新' }}
             </button>
           </div>
         </div>
       </div>
     </div>
-    
+
     <!-- 确认弹窗 -->
     <ConfirmModal
+      :cancel-text="confirmOptions.cancelText"
+      :confirm-text="confirmOptions.confirmText"
+      :message="confirmOptions.message"
       :show="showConfirmModal"
       :title="confirmOptions.title"
-      :message="confirmOptions.message"
-      :confirm-text="confirmOptions.confirmText"
-      :cancel-text="confirmOptions.cancelText"
-      @confirm="handleConfirm"
       @cancel="handleCancel"
+      @confirm="handleConfirm"
     />
-    
+
     <!-- 分组管理模态框 -->
     <GroupManagementModal
       v-if="showGroupManagement"
@@ -1068,7 +1140,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { showToast } from '@/utils/toast'
 import { apiClient } from '@/config/api'
 import { useAccountsStore } from '@/stores/accounts'
@@ -1098,6 +1170,14 @@ const show = ref(true)
 const oauthStep = ref(1)
 const loading = ref(false)
 
+// Setup Token 相关状态
+const setupTokenLoading = ref(false)
+const setupTokenExchanging = ref(false)
+const setupTokenAuthUrl = ref('')
+const setupTokenAuthCode = ref('')
+const setupTokenCopied = ref(false)
+const setupTokenSessionId = ref('')
+
 // 初始化代理配置
 const initProxyConfig = () => {
   if (props.account?.proxy && props.account.proxy.host && props.account.proxy.port) {
@@ -1123,7 +1203,7 @@ const initProxyConfig = () => {
 // 表单数据
 const form = ref({
   platform: props.account?.platform || 'claude',
-  addType: 'oauth',
+  addType: 'setup-token',
   name: props.account?.name || '',
   description: props.account?.description || '',
   accountType: props.account?.accountType || 'shared',
@@ -1137,17 +1217,17 @@ const form = ref({
   apiKey: props.account?.apiKey || '',
   priority: props.account?.priority || 50,
   supportedModels: (() => {
-    const models = props.account?.supportedModels;
-    if (!models) return '';
+    const models = props.account?.supportedModels
+    if (!models) return ''
     // 处理对象格式（Claude Console 的新格式）
     if (typeof models === 'object' && !Array.isArray(models)) {
-      return Object.keys(models).join('\n');
+      return Object.keys(models).join('\n')
     }
     // 处理数组格式（向后兼容）
     if (Array.isArray(models)) {
-      return models.join('\n');
+      return models.join('\n')
     }
-    return '';
+    return ''
   })(),
   userAgent: props.account?.userAgent || '',
   rateLimitDuration: props.account?.rateLimitDuration || 60,
@@ -1176,32 +1256,40 @@ const canProceed = computed(() => {
   return form.value.name?.trim() && form.value.platform
 })
 
-// 计算是否可以创建
-const canCreate = computed(() => {
-  if (form.value.addType === 'manual') {
-    return form.value.name?.trim() && form.value.accessToken?.trim()
-  }
-  return form.value.name?.trim()
+// 计算是否可以交换Setup Token code
+const canExchangeSetupToken = computed(() => {
+  return setupTokenAuthUrl.value && setupTokenAuthCode.value.trim()
 })
+
+// // 计算是否可以创建
+// const canCreate = computed(() => {
+//   if (form.value.addType === 'manual') {
+//     return form.value.name?.trim() && form.value.accessToken?.trim()
+//   }
+//   return form.value.name?.trim()
+// })
 
 // 下一步
 const nextStep = async () => {
   // 清除之前的错误
   errors.value.name = ''
-  
+
   if (!canProceed.value) {
     if (!form.value.name || form.value.name.trim() === '') {
       errors.value.name = '请填写账户名称'
     }
     return
   }
-  
+
   // 分组类型验证
-  if (form.value.accountType === 'group' && (!form.value.groupId || form.value.groupId.trim() === '')) {
+  if (
+    form.value.accountType === 'group' &&
+    (!form.value.groupId || form.value.groupId.trim() === '')
+  ) {
     showToast('请选择一个分组', 'error')
     return
   }
-  
+
   // 对于Gemini账户，检查项目 ID
   if (form.value.platform === 'gemini' && oauthStep.value === 1 && form.value.addType === 'oauth') {
     if (!form.value.projectId || form.value.projectId.trim() === '') {
@@ -1217,8 +1305,100 @@ const nextStep = async () => {
       }
     }
   }
-  
+
   oauthStep.value = 2
+}
+
+// Setup Token 相关方法
+// 生成Setup Token授权URL
+const generateSetupTokenAuthUrl = async () => {
+  setupTokenLoading.value = true
+  try {
+    const proxyConfig = form.value.proxy?.enabled
+      ? {
+          proxy: {
+            type: form.value.proxy.type,
+            host: form.value.proxy.host,
+            port: parseInt(form.value.proxy.port),
+            username: form.value.proxy.username || null,
+            password: form.value.proxy.password || null
+          }
+        }
+      : {}
+
+    const result = await accountsStore.generateClaudeSetupTokenUrl(proxyConfig)
+    setupTokenAuthUrl.value = result.authUrl
+    setupTokenSessionId.value = result.sessionId
+  } catch (error) {
+    showToast(error.message || '生成Setup Token授权链接失败', 'error')
+  } finally {
+    setupTokenLoading.value = false
+  }
+}
+
+// 重新生成Setup Token授权URL
+const regenerateSetupTokenAuthUrl = () => {
+  setupTokenAuthUrl.value = ''
+  setupTokenAuthCode.value = ''
+  generateSetupTokenAuthUrl()
+}
+
+// 复制Setup Token授权URL
+const copySetupTokenAuthUrl = async () => {
+  try {
+    await navigator.clipboard.writeText(setupTokenAuthUrl.value)
+    setupTokenCopied.value = true
+    showToast('链接已复制', 'success')
+    setTimeout(() => {
+      setupTokenCopied.value = false
+    }, 2000)
+  } catch (error) {
+    // 降级方案
+    const input = document.createElement('input')
+    input.value = setupTokenAuthUrl.value
+    document.body.appendChild(input)
+    input.select()
+    document.execCommand('copy')
+    document.body.removeChild(input)
+    setupTokenCopied.value = true
+    showToast('链接已复制', 'success')
+    setTimeout(() => {
+      setupTokenCopied.value = false
+    }, 2000)
+  }
+}
+
+// 交换Setup Token授权码
+const exchangeSetupTokenCode = async () => {
+  if (!canExchangeSetupToken.value) return
+
+  setupTokenExchanging.value = true
+  try {
+    const data = {
+      sessionId: setupTokenSessionId.value,
+      callbackUrl: setupTokenAuthCode.value.trim()
+    }
+
+    // 添加代理配置（如果启用）
+    if (form.value.proxy?.enabled) {
+      data.proxy = {
+        type: form.value.proxy.type,
+        host: form.value.proxy.host,
+        port: parseInt(form.value.proxy.port),
+        username: form.value.proxy.username || null,
+        password: form.value.proxy.password || null
+      }
+    }
+
+    const tokenInfo = await accountsStore.exchangeClaudeSetupTokenCode(data)
+
+    // 调用相同的成功处理函数
+    await handleOAuthSuccess(tokenInfo)
+  } catch (error) {
+    showToast(error.message || 'Setup Token授权失败，请检查授权码是否正确', 'error')
+  } finally {
+    setupTokenExchanging.value = false
+  }
 }
 
 // 处理OAuth成功
@@ -1230,15 +1410,17 @@ const handleOAuthSuccess = async (tokenInfo) => {
       description: form.value.description,
       accountType: form.value.accountType,
       groupId: form.value.accountType === 'group' ? form.value.groupId : undefined,
-      proxy: form.value.proxy.enabled ? {
-        type: form.value.proxy.type,
-        host: form.value.proxy.host,
-        port: parseInt(form.value.proxy.port),
-        username: form.value.proxy.username || null,
-        password: form.value.proxy.password || null
-      } : null
+      proxy: form.value.proxy.enabled
+        ? {
+            type: form.value.proxy.type,
+            host: form.value.proxy.host,
+            port: parseInt(form.value.proxy.port),
+            username: form.value.proxy.username || null,
+            password: form.value.proxy.password || null
+          }
+        : null
     }
-    
+
     if (form.value.platform === 'claude') {
       // Claude使用claudeAiOauth字段
       data.claudeAiOauth = tokenInfo.claudeAiOauth || tokenInfo
@@ -1250,14 +1432,14 @@ const handleOAuthSuccess = async (tokenInfo) => {
         data.projectId = form.value.projectId
       }
     }
-    
+
     let result
     if (form.value.platform === 'claude') {
       result = await accountsStore.createClaudeAccount(data)
     } else {
       result = await accountsStore.createGeminiAccount(data)
     }
-    
+
     emit('success', result)
   } catch (error) {
     showToast(error.message || '账户创建失败', 'error')
@@ -1273,14 +1455,14 @@ const createAccount = async () => {
   errors.value.accessToken = ''
   errors.value.apiUrl = ''
   errors.value.apiKey = ''
-  
+
   let hasError = false
-  
+
   if (!form.value.name || form.value.name.trim() === '') {
     errors.value.name = '请填写账户名称'
     hasError = true
   }
-  
+
   // Claude Console 验证
   if (form.value.platform === 'claude-console') {
     if (!form.value.apiUrl || form.value.apiUrl.trim() === '') {
@@ -1305,21 +1487,27 @@ const createAccount = async () => {
       errors.value.region = '请选择 AWS 区域'
       hasError = true
     }
-  } else if (form.value.addType === 'manual' && (!form.value.accessToken || form.value.accessToken.trim() === '')) {
+  } else if (
+    form.value.addType === 'manual' &&
+    (!form.value.accessToken || form.value.accessToken.trim() === '')
+  ) {
     errors.value.accessToken = '请填写 Access Token'
     hasError = true
   }
-  
+
   // 分组类型验证
-  if (form.value.accountType === 'group' && (!form.value.groupId || form.value.groupId.trim() === '')) {
+  if (
+    form.value.accountType === 'group' &&
+    (!form.value.groupId || form.value.groupId.trim() === '')
+  ) {
     showToast('请选择一个分组', 'error')
     hasError = true
   }
-  
+
   if (hasError) {
     return
   }
-  
+
   loading.value = true
   try {
     const data = {
@@ -1327,21 +1515,23 @@ const createAccount = async () => {
       description: form.value.description,
       accountType: form.value.accountType,
       groupId: form.value.accountType === 'group' ? form.value.groupId : undefined,
-      proxy: form.value.proxy.enabled ? {
-        type: form.value.proxy.type,
-        host: form.value.proxy.host,
-        port: parseInt(form.value.proxy.port),
-        username: form.value.proxy.username || null,
-        password: form.value.proxy.password || null
-      } : null
+      proxy: form.value.proxy.enabled
+        ? {
+            type: form.value.proxy.type,
+            host: form.value.proxy.host,
+            port: parseInt(form.value.proxy.port),
+            username: form.value.proxy.username || null,
+            password: form.value.proxy.password || null
+          }
+        : null
     }
-    
+
     if (form.value.platform === 'claude') {
       // Claude手动模式需要构建claudeAiOauth对象
-      const expiresInMs = form.value.refreshToken 
-        ? (10 * 60 * 1000) // 10分钟
-        : (365 * 24 * 60 * 60 * 1000) // 1年
-      
+      const expiresInMs = form.value.refreshToken
+        ? 10 * 60 * 1000 // 10分钟
+        : 365 * 24 * 60 * 60 * 1000 // 1年
+
       data.claudeAiOauth = {
         accessToken: form.value.accessToken,
         refreshToken: form.value.refreshToken || '',
@@ -1351,10 +1541,10 @@ const createAccount = async () => {
       data.priority = form.value.priority || 50
     } else if (form.value.platform === 'gemini') {
       // Gemini手动模式需要构建geminiOauth对象
-      const expiresInMs = form.value.refreshToken 
-        ? (10 * 60 * 1000) // 10分钟
-        : (365 * 24 * 60 * 60 * 1000) // 1年
-      
+      const expiresInMs = form.value.refreshToken
+        ? 10 * 60 * 1000 // 10分钟
+        : 365 * 24 * 60 * 60 * 1000 // 1年
+
       data.geminiOauth = {
         access_token: form.value.accessToken,
         refresh_token: form.value.refreshToken || '',
@@ -1362,7 +1552,7 @@ const createAccount = async () => {
         token_type: 'Bearer',
         expiry_date: Date.now() + expiresInMs
       }
-      
+
       if (form.value.projectId) {
         data.projectId = form.value.projectId
       }
@@ -1372,7 +1562,7 @@ const createAccount = async () => {
       data.apiKey = form.value.apiKey
       data.priority = form.value.priority || 50
       data.supportedModels = form.value.supportedModels
-        ? form.value.supportedModels.split('\n').filter(m => m.trim())
+        ? form.value.supportedModels.split('\n').filter((m) => m.trim())
         : []
       data.userAgent = form.value.userAgent || null
       data.rateLimitDuration = form.value.rateLimitDuration || 60
@@ -1389,7 +1579,7 @@ const createAccount = async () => {
       data.priority = form.value.priority || 50
       data.rateLimitDuration = form.value.rateLimitDuration || 60
     }
-    
+
     let result
     if (form.value.platform === 'claude') {
       result = await accountsStore.createClaudeAccount(data)
@@ -1400,7 +1590,7 @@ const createAccount = async () => {
     } else {
       result = await accountsStore.createGeminiAccount(data)
     }
-    
+
     emit('success', result)
   } catch (error) {
     showToast(error.message || '账户创建失败', 'error')
@@ -1413,19 +1603,22 @@ const createAccount = async () => {
 const updateAccount = async () => {
   // 清除之前的错误
   errors.value.name = ''
-  
+
   // 验证账户名称
   if (!form.value.name || form.value.name.trim() === '') {
     errors.value.name = '请填写账户名称'
     return
   }
-  
+
   // 分组类型验证
-  if (form.value.accountType === 'group' && (!form.value.groupId || form.value.groupId.trim() === '')) {
+  if (
+    form.value.accountType === 'group' &&
+    (!form.value.groupId || form.value.groupId.trim() === '')
+  ) {
     showToast('请选择一个分组', 'error')
     return
   }
-  
+
   // 对于Gemini账户，检查项目 ID
   if (form.value.platform === 'gemini') {
     if (!form.value.projectId || form.value.projectId.trim() === '') {
@@ -1441,7 +1634,7 @@ const updateAccount = async () => {
       }
     }
   }
-  
+
   loading.value = true
   try {
     const data = {
@@ -1449,23 +1642,25 @@ const updateAccount = async () => {
       description: form.value.description,
       accountType: form.value.accountType,
       groupId: form.value.accountType === 'group' ? form.value.groupId : undefined,
-      proxy: form.value.proxy.enabled ? {
-        type: form.value.proxy.type,
-        host: form.value.proxy.host,
-        port: parseInt(form.value.proxy.port),
-        username: form.value.proxy.username || null,
-        password: form.value.proxy.password || null
-      } : null
+      proxy: form.value.proxy.enabled
+        ? {
+            type: form.value.proxy.type,
+            host: form.value.proxy.host,
+            port: parseInt(form.value.proxy.port),
+            username: form.value.proxy.username || null,
+            password: form.value.proxy.password || null
+          }
+        : null
     }
-    
+
     // 只有非空时才更新token
     if (form.value.accessToken || form.value.refreshToken) {
       if (props.account.platform === 'claude') {
         // Claude需要构建claudeAiOauth对象
-        const expiresInMs = form.value.refreshToken 
-          ? (10 * 60 * 1000) // 10分钟
-          : (365 * 24 * 60 * 60 * 1000) // 1年
-        
+        const expiresInMs = form.value.refreshToken
+          ? 10 * 60 * 1000 // 10分钟
+          : 365 * 24 * 60 * 60 * 1000 // 1年
+
         data.claudeAiOauth = {
           accessToken: form.value.accessToken || '',
           refreshToken: form.value.refreshToken || '',
@@ -1474,10 +1669,10 @@ const updateAccount = async () => {
         }
       } else if (props.account.platform === 'gemini') {
         // Gemini需要构建geminiOauth对象
-        const expiresInMs = form.value.refreshToken 
-          ? (10 * 60 * 1000) // 10分钟
-          : (365 * 24 * 60 * 60 * 1000) // 1年
-        
+        const expiresInMs = form.value.refreshToken
+          ? 10 * 60 * 1000 // 10分钟
+          : 365 * 24 * 60 * 60 * 1000 // 1年
+
         data.geminiOauth = {
           access_token: form.value.accessToken || '',
           refresh_token: form.value.refreshToken || '',
@@ -1487,16 +1682,16 @@ const updateAccount = async () => {
         }
       }
     }
-    
+
     if (props.account.platform === 'gemini' && form.value.projectId) {
       data.projectId = form.value.projectId
     }
-    
+
     // Claude 官方账号优先级更新
     if (props.account.platform === 'claude') {
       data.priority = form.value.priority || 50
     }
-    
+
     // Claude Console 特定更新
     if (props.account.platform === 'claude-console') {
       data.apiUrl = form.value.apiUrl
@@ -1505,12 +1700,12 @@ const updateAccount = async () => {
       }
       data.priority = form.value.priority || 50
       data.supportedModels = form.value.supportedModels
-        ? form.value.supportedModels.split('\n').filter(m => m.trim())
+        ? form.value.supportedModels.split('\n').filter((m) => m.trim())
         : []
       data.userAgent = form.value.userAgent || null
       data.rateLimitDuration = form.value.rateLimitDuration || 60
     }
-    
+
     // Bedrock 特定更新
     if (props.account.platform === 'bedrock') {
       // 只有当有凭证变更时才构造 awsCredentials 对象
@@ -1535,7 +1730,7 @@ const updateAccount = async () => {
       data.priority = form.value.priority || 50
       data.rateLimitDuration = form.value.rateLimitDuration || 60
     }
-    
+
     if (props.account.platform === 'claude') {
       await accountsStore.updateClaudeAccount(props.account.id, data)
     } else if (props.account.platform === 'claude-console') {
@@ -1545,7 +1740,7 @@ const updateAccount = async () => {
     } else {
       await accountsStore.updateGeminiAccount(props.account.id, data)
     }
-    
+
     emit('success')
   } catch (error) {
     showToast(error.message || '账户更新失败', 'error')
@@ -1555,32 +1750,44 @@ const updateAccount = async () => {
 }
 
 // 监听表单名称变化，清除错误
-watch(() => form.value.name, () => {
-  if (errors.value.name && form.value.name?.trim()) {
-    errors.value.name = ''
+watch(
+  () => form.value.name,
+  () => {
+    if (errors.value.name && form.value.name?.trim()) {
+      errors.value.name = ''
+    }
   }
-})
+)
 
 // 监听Access Token变化，清除错误
-watch(() => form.value.accessToken, () => {
-  if (errors.value.accessToken && form.value.accessToken?.trim()) {
-    errors.value.accessToken = ''
+watch(
+  () => form.value.accessToken,
+  () => {
+    if (errors.value.accessToken && form.value.accessToken?.trim()) {
+      errors.value.accessToken = ''
+    }
   }
-})
+)
 
 // 监听API URL变化，清除错误
-watch(() => form.value.apiUrl, () => {
-  if (errors.value.apiUrl && form.value.apiUrl?.trim()) {
-    errors.value.apiUrl = ''
+watch(
+  () => form.value.apiUrl,
+  () => {
+    if (errors.value.apiUrl && form.value.apiUrl?.trim()) {
+      errors.value.apiUrl = ''
+    }
   }
-})
+)
 
 // 监听API Key变化，清除错误
-watch(() => form.value.apiKey, () => {
-  if (errors.value.apiKey && form.value.apiKey?.trim()) {
-    errors.value.apiKey = ''
+watch(
+  () => form.value.apiKey,
+  () => {
+    if (errors.value.apiKey && form.value.apiKey?.trim()) {
+      errors.value.apiKey = ''
+    }
   }
-})
+)
 
 // 分组相关数据
 const groups = ref([])
@@ -1590,7 +1797,7 @@ const showGroupManagement = ref(false)
 // 根据平台筛选分组
 const filteredGroups = computed(() => {
   const platformFilter = form.value.platform === 'claude-console' ? 'claude' : form.value.platform
-  return groups.value.filter(g => g.platform === platformFilter)
+  return groups.value.filter((g) => g.platform === platformFilter)
 })
 
 // 加载分组列表
@@ -1619,53 +1826,107 @@ const handleGroupRefresh = async () => {
 }
 
 // 监听平台变化，重置表单
-watch(() => form.value.platform, (newPlatform, oldPlatform) => {
-  // 处理添加方式的自动切换
-  if (newPlatform === 'claude-console' || newPlatform === 'bedrock') {
-    form.value.addType = 'manual' // Claude Console 和 Bedrock 只支持手动模式
-  } else if (oldPlatform === 'claude-console' && (newPlatform === 'claude' || newPlatform === 'gemini')) {
-    // 从 Claude Console 切换到其他平台时，恢复为 OAuth
-    form.value.addType = 'oauth'
+watch(
+  () => form.value.platform,
+  (newPlatform, oldPlatform) => {
+    // 处理添加方式的自动切换
+    if (newPlatform === 'claude-console' || newPlatform === 'bedrock') {
+      form.value.addType = 'manual' // Claude Console 和 Bedrock 只支持手动模式
+    } else if (
+      oldPlatform === 'claude-console' &&
+      (newPlatform === 'claude' || newPlatform === 'gemini')
+    ) {
+      // 从 Claude Console 切换到其他平台时，恢复为 OAuth
+      form.value.addType = 'oauth'
+    }
+
+    // 平台变化时，清空分组选择
+    if (form.value.accountType === 'group') {
+      form.value.groupId = ''
+    }
   }
-  
-  // 平台变化时，清空分组选择
-  if (form.value.accountType === 'group') {
-    form.value.groupId = ''
+)
+
+// 监听Setup Token授权码输入，自动提取URL中的code参数
+watch(setupTokenAuthCode, (newValue) => {
+  if (!newValue || typeof newValue !== 'string') return
+
+  const trimmedValue = newValue.trim()
+
+  // 如果内容为空，不处理
+  if (!trimmedValue) return
+
+  // 检查是否是 URL 格式（包含 http:// 或 https://）
+  const isUrl = trimmedValue.startsWith('http://') || trimmedValue.startsWith('https://')
+
+  // 如果是 URL 格式
+  if (isUrl) {
+    // 检查是否是正确的 localhost:45462 开头的 URL
+    if (trimmedValue.startsWith('http://localhost:45462')) {
+      try {
+        const url = new URL(trimmedValue)
+        const code = url.searchParams.get('code')
+
+        if (code) {
+          // 成功提取授权码
+          setupTokenAuthCode.value = code
+          showToast('成功提取授权码！', 'success')
+          console.log('Successfully extracted authorization code from URL')
+        } else {
+          // URL 中没有 code 参数
+          showToast('URL 中未找到授权码参数，请检查链接是否正确', 'error')
+        }
+      } catch (error) {
+        // URL 解析失败
+        console.error('Failed to parse URL:', error)
+        showToast('链接格式错误，请检查是否为完整的 URL', 'error')
+      }
+    } else {
+      // 错误的 URL（不是 localhost:45462 开头）
+      showToast('请粘贴以 http://localhost:45462 开头的链接', 'error')
+    }
   }
+  // 如果不是 URL，保持原值（兼容直接输入授权码）
 })
 
 // 监听账户类型变化
-watch(() => form.value.accountType, (newType) => {
-  if (newType === 'group') {
-    // 如果选择分组类型，加载分组列表
-    if (groups.value.length === 0) {
-      loadGroups()
+watch(
+  () => form.value.accountType,
+  (newType) => {
+    if (newType === 'group') {
+      // 如果选择分组类型，加载分组列表
+      if (groups.value.length === 0) {
+        loadGroups()
+      }
     }
   }
-})
+)
 
 // 监听分组选择
-watch(() => form.value.groupId, (newGroupId) => {
-  if (newGroupId === '__new__') {
-    // 触发创建新分组
-    form.value.groupId = ''
-    showGroupManagement.value = true
+watch(
+  () => form.value.groupId,
+  (newGroupId) => {
+    if (newGroupId === '__new__') {
+      // 触发创建新分组
+      form.value.groupId = ''
+      showGroupManagement.value = true
+    }
   }
-})
+)
 
 // 添加预设模型
 const addPresetModel = (modelName) => {
   // 获取当前模型列表
   const currentModels = form.value.supportedModels
-    ? form.value.supportedModels.split('\n').filter(m => m.trim())
+    ? form.value.supportedModels.split('\n').filter((m) => m.trim())
     : []
-  
+
   // 检查是否已存在
   if (currentModels.includes(modelName)) {
     showToast(`模型 ${modelName} 已存在`, 'info')
     return
   }
-  
+
   // 添加到列表
   currentModels.push(modelName)
   form.value.supportedModels = currentModels.join('\n')
@@ -1673,86 +1934,94 @@ const addPresetModel = (modelName) => {
 }
 
 // 监听账户变化，更新表单
-watch(() => props.account, (newAccount) => {
-  if (newAccount) {
-    // 重新初始化代理配置
-    const proxyConfig = newAccount.proxy && newAccount.proxy.host && newAccount.proxy.port
-      ? {
-          enabled: true,
-          type: newAccount.proxy.type || 'socks5',
-          host: newAccount.proxy.host,
-          port: newAccount.proxy.port,
-          username: newAccount.proxy.username || '',
-          password: newAccount.proxy.password || ''
-        }
-      : {
-          enabled: false,
-          type: 'socks5',
-          host: '',
-          port: '',
-          username: '',
-          password: ''
-        }
-    
-    form.value = {
-      platform: newAccount.platform,
-      addType: 'oauth',
-      name: newAccount.name,
-      description: newAccount.description || '',
-      accountType: newAccount.accountType || 'shared',
-      groupId: '',
-      projectId: newAccount.projectId || '',
-      accessToken: '',
-      refreshToken: '',
-      proxy: proxyConfig,
-      // Claude Console 特定字段
-      apiUrl: newAccount.apiUrl || '',
-      apiKey: '',  // 编辑模式不显示现有的 API Key
-      priority: newAccount.priority || 50,
-      supportedModels: (() => {
-        const models = newAccount.supportedModels;
-        if (!models) return '';
-        // 处理对象格式（Claude Console 的新格式）
-        if (typeof models === 'object' && !Array.isArray(models)) {
-          return Object.keys(models).join('\n');
-        }
-        // 处理数组格式（向后兼容）
-        if (Array.isArray(models)) {
-          return models.join('\n');
-        }
-        return '';
-      })(),
-      userAgent: newAccount.userAgent || '',
-      rateLimitDuration: newAccount.rateLimitDuration || 60,
-      // Bedrock 特定字段
-      accessKeyId: '',  // 编辑模式不显示现有的访问密钥
-      secretAccessKey: '',  // 编辑模式不显示现有的秘密密钥
-      region: newAccount.region || '',
-      sessionToken: '',  // 编辑模式不显示现有的会话令牌
-      defaultModel: newAccount.defaultModel || '',
-      smallFastModel: newAccount.smallFastModel || ''
+watch(
+  () => props.account,
+  (newAccount) => {
+    if (newAccount) {
+      // 重新初始化代理配置
+      const proxyConfig =
+        newAccount.proxy && newAccount.proxy.host && newAccount.proxy.port
+          ? {
+              enabled: true,
+              type: newAccount.proxy.type || 'socks5',
+              host: newAccount.proxy.host,
+              port: newAccount.proxy.port,
+              username: newAccount.proxy.username || '',
+              password: newAccount.proxy.password || ''
+            }
+          : {
+              enabled: false,
+              type: 'socks5',
+              host: '',
+              port: '',
+              username: '',
+              password: ''
+            }
+
+      form.value = {
+        platform: newAccount.platform,
+        addType: 'oauth',
+        name: newAccount.name,
+        description: newAccount.description || '',
+        accountType: newAccount.accountType || 'shared',
+        groupId: '',
+        projectId: newAccount.projectId || '',
+        accessToken: '',
+        refreshToken: '',
+        proxy: proxyConfig,
+        // Claude Console 特定字段
+        apiUrl: newAccount.apiUrl || '',
+        apiKey: '', // 编辑模式不显示现有的 API Key
+        priority: newAccount.priority || 50,
+        supportedModels: (() => {
+          const models = newAccount.supportedModels
+          if (!models) return ''
+          // 处理对象格式（Claude Console 的新格式）
+          if (typeof models === 'object' && !Array.isArray(models)) {
+            return Object.keys(models).join('\n')
+          }
+          // 处理数组格式（向后兼容）
+          if (Array.isArray(models)) {
+            return models.join('\n')
+          }
+          return ''
+        })(),
+        userAgent: newAccount.userAgent || '',
+        rateLimitDuration: newAccount.rateLimitDuration || 60,
+        // Bedrock 特定字段
+        accessKeyId: '', // 编辑模式不显示现有的访问密钥
+        secretAccessKey: '', // 编辑模式不显示现有的秘密密钥
+        region: newAccount.region || '',
+        sessionToken: '', // 编辑模式不显示现有的会话令牌
+        defaultModel: newAccount.defaultModel || '',
+        smallFastModel: newAccount.smallFastModel || ''
+      }
+
+      // 如果是分组类型，加载分组ID
+      if (newAccount.accountType === 'group') {
+        // 先加载分组列表
+        loadGroups().then(() => {
+          // 如果账户有 groupInfo，直接使用它的 groupId
+          if (newAccount.groupInfo && newAccount.groupInfo.id) {
+            form.value.groupId = newAccount.groupInfo.id
+          } else {
+            // 否则查找账户所属的分组
+            groups.value.forEach((group) => {
+              apiClient
+                .get(`/admin/account-groups/${group.id}/members`)
+                .then((response) => {
+                  const members = response.data || []
+                  if (members.some((m) => m.id === newAccount.id)) {
+                    form.value.groupId = group.id
+                  }
+                })
+                .catch(() => {})
+            })
+          }
+        })
+      }
     }
-    
-    // 如果是分组类型，加载分组ID
-    if (newAccount.accountType === 'group') {
-      // 先加载分组列表
-      loadGroups().then(() => {
-        // 如果账户有 groupInfo，直接使用它的 groupId
-        if (newAccount.groupInfo && newAccount.groupInfo.id) {
-          form.value.groupId = newAccount.groupInfo.id
-        } else {
-          // 否则查找账户所属的分组
-          groups.value.forEach(group => {
-            apiClient.get(`/admin/account-groups/${group.id}/members`).then(response => {
-              const members = response.data || []
-              if (members.some(m => m.id === newAccount.id)) {
-                form.value.groupId = group.id
-              }
-            }).catch(() => {})
-          })
-        }
-      })
-    }
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+)
 </script>

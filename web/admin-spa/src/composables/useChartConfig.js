@@ -2,22 +2,28 @@ import { Chart } from 'chart.js/auto'
 
 export function useChartConfig() {
   // 设置Chart.js默认配置
-  Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  Chart.defaults.font.family =
+    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
   Chart.defaults.color = '#6b7280'
   Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0, 0, 0, 0.8)'
   Chart.defaults.plugins.tooltip.padding = 12
   Chart.defaults.plugins.tooltip.cornerRadius = 8
   Chart.defaults.plugins.tooltip.titleFont.size = 14
   Chart.defaults.plugins.tooltip.bodyFont.size = 12
-  
+
   // 创建渐变色
   const getGradient = (ctx, color, opacity = 0.2) => {
     const gradient = ctx.createLinearGradient(0, 0, 0, 300)
-    gradient.addColorStop(0, `${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`)
+    gradient.addColorStop(
+      0,
+      `${color}${Math.round(opacity * 255)
+        .toString(16)
+        .padStart(2, '0')}`
+    )
     gradient.addColorStop(1, `${color}00`)
     return gradient
   }
-  
+
   // 通用图表选项
   const commonOptions = {
     responsive: true,
@@ -39,7 +45,7 @@ export function useChartConfig() {
         mode: 'index',
         intersect: false,
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             let label = context.dataset.label || ''
             if (label) {
               label += ': '
@@ -72,7 +78,7 @@ export function useChartConfig() {
           font: {
             size: 11
           },
-          callback: function(value) {
+          callback: function (value) {
             if (value >= 1000000) {
               return (value / 1000000).toFixed(1) + 'M'
             } else if (value >= 1000) {
@@ -84,7 +90,7 @@ export function useChartConfig() {
       }
     }
   }
-  
+
   // 颜色方案
   const colorSchemes = {
     primary: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe'],
@@ -92,7 +98,7 @@ export function useChartConfig() {
     warning: ['#f59e0b', '#d97706', '#fbbf24', '#fcd34d', '#fde68a'],
     danger: ['#ef4444', '#dc2626', '#f87171', '#fca5a5', '#fecaca']
   }
-  
+
   return {
     getGradient,
     commonOptions,

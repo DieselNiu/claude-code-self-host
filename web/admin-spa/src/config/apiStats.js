@@ -14,7 +14,7 @@ class ApiStatsClient {
       if (this.isDev && url.startsWith('/admin')) {
         url = '/webapi' + url
       }
-      
+
       const response = await fetch(`${this.baseURL}${url}`, {
         headers: {
           'Content-Type': 'application/json',

@@ -20,7 +20,7 @@ app.use(router)
 
 // 使用Element Plus
 app.use(ElementPlus, {
-  locale: zhCn,
+  locale: zhCn
 })
 
 // 挂载应用

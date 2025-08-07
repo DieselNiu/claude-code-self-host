@@ -11,29 +11,29 @@
  */
 function maskToken(token, visiblePercent = 70) {
   if (!token || typeof token !== 'string') {
-    return '[EMPTY]';
+    return '[EMPTY]'
   }
 
-  const length = token.length;
-  
+  const { length } = token
+
   // 对于非常短的 token，至少隐藏一部分
   if (length <= 10) {
-    return token.slice(0, 5) + '*'.repeat(length - 5);
+    return token.slice(0, 5) + '*'.repeat(length - 5)
   }
 
   // 计算可见字符数量
-  const visibleLength = Math.floor(length * (visiblePercent / 100));
-  
+  const visibleLength = Math.floor(length * (visiblePercent / 100))
+
   // 在前部和尾部分配可见字符
-  const frontLength = Math.ceil(visibleLength * 0.6);
-  const backLength = visibleLength - frontLength;
-  
+  const frontLength = Math.ceil(visibleLength * 0.6)
+  const backLength = visibleLength - frontLength
+
   // 构建脱敏后的 token
-  const front = token.slice(0, frontLength);
-  const back = token.slice(-backLength);
-  const middle = '*'.repeat(length - visibleLength);
-  
-  return `${front}${middle}${back}`;
+  const front = token.slice(0, frontLength)
+  const back = token.slice(-backLength)
+  const middle = '*'.repeat(length - visibleLength)
+
+  return `${front}${middle}${back}`
 }
 
 /**
@@ -42,20 +42,23 @@ function maskToken(token, visiblePercent = 70) {
  * @param {Array<string>} tokenFields - 需要脱敏的字段名列表
  * @returns {Object} 脱敏后的对象副本
  */
-function maskTokensInObject(obj, tokenFields = ['accessToken', 'refreshToken', 'access_token', 'refresh_token']) {
+function maskTokensInObject(
+  obj,
+  tokenFields = ['accessToken', 'refreshToken', 'access_token', 'refresh_token']
+) {
   if (!obj || typeof obj !== 'object') {
-    return obj;
+    return obj
   }
 
-  const masked = { ...obj };
-  
-  tokenFields.forEach(field => {
+  const masked = { ...obj }
+
+  tokenFields.forEach((field) => {
     if (masked[field]) {
-      masked[field] = maskToken(masked[field]);
+      masked[field] = maskToken(masked[field])
     }
-  });
-  
-  return masked;
+  })
+
+  return masked
 }
 
 /**
@@ -75,21 +78,21 @@ function formatTokenRefreshLog(accountId, accountName, tokens, status, message =
     accountName,
     status,
     message
-  };
+  }
 
   if (tokens) {
     log.tokens = {
       accessToken: tokens.accessToken ? maskToken(tokens.accessToken) : '[NOT_PROVIDED]',
       refreshToken: tokens.refreshToken ? maskToken(tokens.refreshToken) : '[NOT_PROVIDED]',
       expiresAt: tokens.expiresAt || '[NOT_PROVIDED]'
-    };
+    }
   }
 
-  return log;
+  return log
 }
 
 module.exports = {
   maskToken,
   maskTokensInObject,
   formatTokenRefreshLog
-};
+}

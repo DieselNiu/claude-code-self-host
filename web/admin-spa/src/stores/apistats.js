@@ -54,14 +54,19 @@ export const useApiStatsStore = defineStore('apistats', () => {
     const limits = statsData.value.limits
 
     return {
-      tokenUsage: limits.tokenLimit > 0 ? Math.min((current.allTokens / limits.tokenLimit) * 100, 100) : 0,
-      costUsage: limits.dailyCostLimit > 0 ? Math.min((current.cost / limits.dailyCostLimit) * 100, 100) : 0,
-      requestUsage: limits.rateLimitRequests > 0 ? Math.min((current.requests / limits.rateLimitRequests) * 100, 100) : 0
+      tokenUsage:
+        limits.tokenLimit > 0 ? Math.min((current.allTokens / limits.tokenLimit) * 100, 100) : 0,
+      costUsage:
+        limits.dailyCostLimit > 0 ? Math.min((current.cost / limits.dailyCostLimit) * 100, 100) : 0,
+      requestUsage:
+        limits.rateLimitRequests > 0
+          ? Math.min((current.requests / limits.rateLimitRequests) * 100, 100)
+          : 0
     }
   })
 
   // Actions
-  
+
   // 查询统计数据
   async function queryStats() {
     if (!apiKey.value.trim()) {
@@ -78,22 +83,22 @@ export const useApiStatsStore = defineStore('apistats', () => {
     try {
       // 获取 API Key ID
       const idResult = await apiStatsClient.getKeyId(apiKey.value)
-      
+
       if (idResult.success) {
         apiId.value = idResult.data.id
-        
+
         // 使用 apiId 查询统计数据
         const statsResult = await apiStatsClient.getUserStats(apiId.value)
-        
+
         if (statsResult.success) {
           statsData.value = statsResult.data
-          
+
           // 同时加载今日和本月的统计数据
           await loadAllPeriodStats()
-          
+
           // 清除错误信息
           error.value = ''
-          
+
           // 更新 URL
           updateURL()
         } else {
@@ -118,10 +123,7 @@ export const useApiStatsStore = defineStore('apistats', () => {
     if (!apiId.value) return
 
     // 并行加载今日和本月的数据
-    await Promise.all([
-      loadPeriodStats('daily'),
-      loadPeriodStats('monthly')
-    ])
+    await Promise.all([loadPeriodStats('daily'), loadPeriodStats('monthly')])
 
     // 加载当前选择时间段的模型统计
     await loadModelStats(statsPeriod.value)
@@ -131,7 +133,7 @@ export const useApiStatsStore = defineStore('apistats', () => {
   async function loadPeriodStats(period) {
     try {
       const result = await apiStatsClient.getUserModelStats(apiId.value, period)
-      
+
       if (result.success) {
         // 计算汇总数据
         const modelData = result.data || []
@@ -145,8 +147,8 @@ export const useApiStatsStore = defineStore('apistats', () => {
           cost: 0,
           formattedCost: '$0.000000'
         }
-        
-        modelData.forEach(model => {
+
+        modelData.forEach((model) => {
           summary.requests += model.requests || 0
           summary.inputTokens += model.inputTokens || 0
           summary.outputTokens += model.outputTokens || 0
@@ -155,9 +157,9 @@ export const useApiStatsStore = defineStore('apistats', () => {
           summary.allTokens += model.allTokens || 0
           summary.cost += model.costs?.total || 0
         })
-        
+
         summary.formattedCost = formatCost(summary.cost)
-        
+
         // 存储到对应的时间段数据
         if (period === 'daily') {
           dailyStats.value = summary
@@ -180,7 +182,7 @@ export const useApiStatsStore = defineStore('apistats', () => {
 
     try {
       const result = await apiStatsClient.getUserModelStats(apiId.value, period)
-      
+
       if (result.success) {
         modelStats.value = result.data || []
       } else {
@@ -203,8 +205,10 @@ export const useApiStatsStore = defineStore('apistats', () => {
     statsPeriod.value = period
 
     // 如果对应时间段的数据还没有加载，则加载它
-    if ((period === 'daily' && !dailyStats.value) || 
-        (period === 'monthly' && !monthlyStats.value)) {
+    if (
+      (period === 'daily' && !dailyStats.value) ||
+      (period === 'monthly' && !monthlyStats.value)
+    ) {
       await loadPeriodStats(period)
     }
 
@@ -223,13 +227,13 @@ export const useApiStatsStore = defineStore('apistats', () => {
 
     try {
       const result = await apiStatsClient.getUserStats(apiId.value)
-      
+
       if (result.success) {
         statsData.value = result.data
-        
+
         // 同时加载今日和本月的统计数据
         await loadAllPeriodStats()
-        
+
         // 清除错误信息
         error.value = ''
       } else {
@@ -267,7 +271,7 @@ export const useApiStatsStore = defineStore('apistats', () => {
   }
 
   // 工具函数
-  
+
   // 格式化费用
   function formatCost(cost) {
     if (typeof cost !== 'number' || cost === 0) {
@@ -324,11 +328,11 @@ export const useApiStatsStore = defineStore('apistats', () => {
     dailyStats,
     monthlyStats,
     oemSettings,
-    
+
     // Computed
     currentPeriodData,
     usagePercentages,
-    
+
     // Actions
     queryStats,
     loadAllPeriodStats,

@@ -1,84 +1,64 @@
 <template>
   <div class="card p-4 md:p-6">
     <div class="mb-4 md:mb-6">
-      <h3 class="text-lg md:text-xl font-bold flex flex-col sm:flex-row sm:items-center text-gray-900">
+      <h3
+        class="flex flex-col text-lg font-bold text-gray-900 sm:flex-row sm:items-center md:text-xl"
+      >
         <span class="flex items-center">
-          <i class="fas fa-robot mr-2 md:mr-3 text-indigo-500 text-sm md:text-base" />
+          <i class="fas fa-robot mr-2 text-sm text-indigo-500 md:mr-3 md:text-base" />
           模型使用统计
         </span>
-        <span class="text-xs md:text-sm font-normal text-gray-600 sm:ml-2">({{ statsPeriod === 'daily' ? '今日' : '本月' }})</span>
+        <span class="text-xs font-normal text-gray-600 sm:ml-2 md:text-sm"
+          >({{ statsPeriod === 'daily' ? '今日' : '本月' }})</span
+        >
       </h3>
     </div>
 
     <!-- 模型统计加载状态 -->
-    <div
-      v-if="modelStatsLoading"
-      class="text-center py-6 md:py-8"
-    >
-      <i class="fas fa-spinner loading-spinner text-xl md:text-2xl mb-2 text-gray-600" />
-      <p class="text-gray-600 text-sm md:text-base">
-        加载模型统计数据中...
-      </p>
+    <div v-if="modelStatsLoading" class="py-6 text-center md:py-8">
+      <i class="fas fa-spinner loading-spinner mb-2 text-xl text-gray-600 md:text-2xl" />
+      <p class="text-sm text-gray-600 md:text-base">加载模型统计数据中...</p>
     </div>
 
     <!-- 模型统计数据 -->
-    <div
-      v-else-if="modelStats.length > 0"
-      class="space-y-3 md:space-y-4"
-    >
-      <div 
-        v-for="(model, index) in modelStats" 
-        :key="index"
-        class="model-usage-item"
-      >
-        <div class="flex justify-between items-start mb-2 md:mb-3">
-          <div class="flex-1 min-w-0">
-            <h4 class="font-bold text-base md:text-lg text-gray-900 break-all">
+    <div v-else-if="modelStats.length > 0" class="space-y-3 md:space-y-4">
+      <div v-for="(model, index) in modelStats" :key="index" class="model-usage-item">
+        <div class="mb-2 flex items-start justify-between md:mb-3">
+          <div class="min-w-0 flex-1">
+            <h4 class="break-all text-base font-bold text-gray-900 md:text-lg">
               {{ model.model }}
             </h4>
-            <p class="text-gray-600 text-xs md:text-sm">
-              {{ model.requests }} 次请求
-            </p>
+            <p class="text-xs text-gray-600 md:text-sm">{{ model.requests }} 次请求</p>
           </div>
-          <div class="text-right flex-shrink-0 ml-3">
-            <div class="text-base md:text-lg font-bold text-green-600">
+          <div class="ml-3 flex-shrink-0 text-right">
+            <div class="text-base font-bold text-green-600 md:text-lg">
               {{ model.formatted?.total || '$0.000000' }}
             </div>
-            <div class="text-xs md:text-sm text-gray-600">
-              总费用
-            </div>
+            <div class="text-xs text-gray-600 md:text-sm">总费用</div>
           </div>
         </div>
-        
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 text-xs md:text-sm">
-          <div class="bg-gray-50 rounded p-2">
-            <div class="text-gray-600">
-              输入 Token
-            </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs md:grid-cols-4 md:gap-3 md:text-sm">
+          <div class="rounded bg-gray-50 p-2">
+            <div class="text-gray-600">输入 Token</div>
             <div class="font-medium text-gray-900">
               {{ formatNumber(model.inputTokens) }}
             </div>
           </div>
-          <div class="bg-gray-50 rounded p-2">
-            <div class="text-gray-600">
-              输出 Token
-            </div>
+          <div class="rounded bg-gray-50 p-2">
+            <div class="text-gray-600">输出 Token</div>
             <div class="font-medium text-gray-900">
               {{ formatNumber(model.outputTokens) }}
             </div>
           </div>
-          <div class="bg-gray-50 rounded p-2">
-            <div class="text-gray-600">
-              缓存创建
-            </div>
+          <div class="rounded bg-gray-50 p-2">
+            <div class="text-gray-600">缓存创建</div>
             <div class="font-medium text-gray-900">
               {{ formatNumber(model.cacheCreateTokens) }}
             </div>
           </div>
-          <div class="bg-gray-50 rounded p-2">
-            <div class="text-gray-600">
-              缓存读取
-            </div>
+          <div class="rounded bg-gray-50 p-2">
+            <div class="text-gray-600">缓存读取</div>
             <div class="font-medium text-gray-900">
               {{ formatNumber(model.cacheReadTokens) }}
             </div>
@@ -88,11 +68,8 @@
     </div>
 
     <!-- 无模型数据 -->
-    <div
-      v-else
-      class="text-center py-6 md:py-8 text-gray-500"
-    >
-      <i class="fas fa-chart-pie text-2xl md:text-3xl mb-3" />
+    <div v-else class="py-6 text-center text-gray-500 md:py-8">
+      <i class="fas fa-chart-pie mb-3 text-2xl md:text-3xl" />
       <p class="text-sm md:text-base">
         暂无{{ statsPeriod === 'daily' ? '今日' : '本月' }}模型使用数据
       </p>
@@ -112,9 +89,9 @@ const formatNumber = (num) => {
   if (typeof num !== 'number') {
     num = parseInt(num) || 0
   }
-  
+
   if (num === 0) return '0'
-  
+
   // 大数字使用简化格式
   if (num >= 1000000) {
     return (num / 1000000).toFixed(1) + 'M'
@@ -132,7 +109,7 @@ const formatNumber = (num) => {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 
+  box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
   overflow: hidden;
@@ -152,7 +129,7 @@ const formatNumber = (num) => {
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 20px 25px -5px rgba(0, 0, 0, 0.15),
     0 10px 10px -5px rgba(0, 0, 0, 0.08);
 }
@@ -186,7 +163,7 @@ const formatNumber = (num) => {
 
 .model-usage-item:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
   border-color: rgba(255, 255, 255, 0.3);
@@ -199,8 +176,12 @@ const formatNumber = (num) => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 响应式优化 */
@@ -214,7 +195,7 @@ const formatNumber = (num) => {
   .model-usage-item {
     padding: 10px;
   }
-  
+
   .model-usage-item .grid {
     grid-template-columns: 1fr;
   }

@@ -10,7 +10,7 @@ export function showToast(message, type = 'info', title = '', duration = 3000) {
     toastContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000;'
     document.body.appendChild(toastContainer)
   }
-  
+
   // 创建 toast
   const id = ++toastId
   const toast = document.createElement('div')
@@ -23,14 +23,14 @@ export function showToast(message, type = 'info', title = '', duration = 3000) {
     transform: translateX(100%);
     transition: transform 0.3s ease-in-out;
   `
-  
+
   const iconMap = {
     success: 'fas fa-check-circle',
     error: 'fas fa-times-circle',
     warning: 'fas fa-exclamation-triangle',
     info: 'fas fa-info-circle'
   }
-  
+
   toast.innerHTML = `
     <div class="flex items-start gap-3">
       <div class="flex-shrink-0 mt-0.5">
@@ -46,14 +46,14 @@ export function showToast(message, type = 'info', title = '', duration = 3000) {
       </button>
     </div>
   `
-  
+
   toastContainer.appendChild(toast)
-  
+
   // 触发动画
   setTimeout(() => {
     toast.style.transform = 'translateX(0)'
   }, 10)
-  
+
   // 自动移除
   if (duration > 0) {
     setTimeout(() => {
@@ -63,6 +63,6 @@ export function showToast(message, type = 'info', title = '', duration = 3000) {
       }, 300)
     }, duration)
   }
-  
+
   return id
 }

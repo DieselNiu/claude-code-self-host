@@ -1,58 +1,48 @@
 <template>
-  <div class="api-input-wide-card glass-strong rounded-3xl p-6 mb-8 shadow-xl">
+  <div class="api-input-wide-card glass-strong mb-8 rounded-3xl p-6 shadow-xl">
     <!-- 标题区域 -->
-    <div class="wide-card-title text-center mb-6">
-      <h2 class="text-2xl font-bold mb-2">
+    <div class="wide-card-title mb-6 text-center">
+      <h2 class="mb-2 text-2xl font-bold">
         <i class="fas fa-chart-line mr-3" />
         使用统计查询
       </h2>
-      <p class="text-base text-gray-600">
-        查询您的 API Key 使用情况和统计数据
-      </p>
+      <p class="text-base text-gray-600">查询您的 API Key 使用情况和统计数据</p>
     </div>
-    
+
     <!-- 输入区域 -->
-    <div class="max-w-4xl mx-auto">
+    <div class="mx-auto max-w-4xl">
       <div class="api-input-grid grid grid-cols-1 lg:grid-cols-4">
         <!-- API Key 输入 -->
         <div class="lg:col-span-3">
-          <label class="block text-sm font-medium mb-2 text-gray-700">
+          <label class="mb-2 block text-sm font-medium text-gray-700">
             <i class="fas fa-key mr-2" />
             输入您的 API Key
           </label>
-          <input 
-            v-model="apiKey" 
-            type="password" 
-            placeholder="请输入您的 API Key (cr_...)"
+          <input
+            v-model="apiKey"
             class="wide-card-input w-full"
             :disabled="loading"
+            placeholder="请输入您的 API Key (cr_...)"
+            type="password"
             @keyup.enter="queryStats"
-          >
+          />
         </div>
-        
+
         <!-- 查询按钮 -->
         <div class="lg:col-span-1">
-          <label class="hidden lg:block text-sm font-medium mb-2 text-gray-700">
-            &nbsp;
-          </label>
-          <button 
+          <label class="mb-2 hidden text-sm font-medium text-gray-700 lg:block"> &nbsp; </label>
+          <button
+            class="btn btn-primary btn-query flex h-full w-full items-center justify-center gap-2"
             :disabled="loading || !apiKey.trim()"
-            class="btn btn-primary btn-query w-full h-full flex items-center justify-center gap-2"
             @click="queryStats"
           >
-            <i
-              v-if="loading"
-              class="fas fa-spinner loading-spinner"
-            />
-            <i
-              v-else
-              class="fas fa-search"
-            />
+            <i v-if="loading" class="fas fa-spinner loading-spinner" />
+            <i v-else class="fas fa-search" />
             {{ loading ? '查询中...' : '查询统计' }}
           </button>
         </div>
       </div>
-      
+
       <!-- 安全提示 -->
       <div class="security-notice mt-4">
         <i class="fas fa-shield-alt mr-2" />
@@ -77,7 +67,7 @@ const { queryStats } = apiStatsStore
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(25px);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 
+  box-shadow:
     0 25px 50px -12px rgba(0, 0, 0, 0.25),
     0 0 0 1px rgba(255, 255, 255, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -85,7 +75,7 @@ const { queryStats } = apiStatsStore
 }
 
 .api-input-wide-card:hover {
-  box-shadow: 
+  box-shadow:
     0 32px 64px -12px rgba(0, 0, 0, 0.35),
     0 0 0 1px rgba(255, 255, 255, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
@@ -135,7 +125,7 @@ const { queryStats } = apiStatsStore
 .wide-card-input:focus {
   outline: none;
   border-color: #60a5fa;
-  box-shadow: 
+  box-shadow:
     0 0 0 3px rgba(96, 165, 250, 0.2),
     0 10px 15px -3px rgba(0, 0, 0, 0.1);
   background: white;
@@ -162,14 +152,14 @@ const { queryStats } = apiStatsStore
 .btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  box-shadow: 
+  box-shadow:
     0 10px 15px -3px rgba(102, 126, 234, 0.3),
     0 4px 6px -2px rgba(102, 126, 234, 0.05);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 
+  box-shadow:
     0 20px 25px -5px rgba(102, 126, 234, 0.3),
     0 10px 10px -5px rgba(102, 126, 234, 0.1);
 }
@@ -209,8 +199,12 @@ const { queryStats } = apiStatsStore
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 响应式优化 */
@@ -218,33 +212,33 @@ const { queryStats } = apiStatsStore
   .api-input-wide-card {
     padding: 1.25rem;
   }
-  
+
   .wide-card-title {
     margin-bottom: 1.25rem;
   }
-  
+
   .wide-card-title h2 {
     font-size: 1.5rem;
   }
-  
+
   .wide-card-title p {
     font-size: 0.875rem;
   }
-  
+
   .api-input-grid {
     gap: 1rem;
   }
-  
+
   .wide-card-input {
     padding: 12px 14px;
     font-size: 15px;
   }
-  
+
   .btn-query {
     padding: 12px 20px;
     font-size: 15px;
   }
-  
+
   .security-notice {
     padding: 10px 14px;
     font-size: 0.8rem;
@@ -255,20 +249,20 @@ const { queryStats } = apiStatsStore
   .api-input-wide-card {
     padding: 1rem;
   }
-  
+
   .wide-card-title h2 {
     font-size: 1.25rem;
   }
-  
+
   .wide-card-title p {
     font-size: 0.8rem;
   }
-  
+
   .wide-card-input {
     padding: 10px 12px;
     font-size: 14px;
   }
-  
+
   .btn-query {
     padding: 10px 16px;
     font-size: 14px;

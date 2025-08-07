@@ -1,97 +1,100 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 modal z-50 flex items-center justify-center p-4">
-      <div class="modal-content w-full max-w-lg p-8 mx-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div class="flex items-center justify-between mb-6">
+    <div class="modal fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        class="modal-content custom-scrollbar mx-auto max-h-[90vh] w-full max-w-lg overflow-y-auto p-8"
+      >
+        <div class="mb-6 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-              <i class="fas fa-check text-white text-lg" />
+            <div
+              class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600"
+            >
+              <i class="fas fa-check text-lg text-white" />
             </div>
             <div>
-              <h3 class="text-xl font-bold text-gray-900">
-                API Key 创建成功
-              </h3>
-              <p class="text-sm text-gray-600">
-                请妥善保存您的 API Key
-              </p>
+              <h3 class="text-xl font-bold text-gray-900">API Key 创建成功</h3>
+              <p class="text-sm text-gray-600">请妥善保存您的 API Key</p>
             </div>
           </div>
-          <button 
-            class="text-gray-400 hover:text-gray-600 transition-colors"
+          <button
+            class="text-gray-400 transition-colors hover:text-gray-600"
             title="直接关闭（不推荐）"
             @click="handleDirectClose"
           >
             <i class="fas fa-times text-xl" />
           </button>
         </div>
-      
+
         <!-- 警告提示 -->
-        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6">
+        <div class="mb-6 border-l-4 border-amber-400 bg-amber-50 p-4">
           <div class="flex items-start">
-            <div class="w-6 h-6 bg-amber-400 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-              <i class="fas fa-exclamation-triangle text-white text-sm" />
+            <div
+              class="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-amber-400"
+            >
+              <i class="fas fa-exclamation-triangle text-sm text-white" />
             </div>
             <div class="ml-3">
-              <h5 class="font-semibold text-amber-900 mb-1">
-                重要提醒
-              </h5>
+              <h5 class="mb-1 font-semibold text-amber-900">重要提醒</h5>
               <p class="text-sm text-amber-800">
-                这是您唯一能看到完整 API Key 的机会。关闭此窗口后，系统将不再显示完整的 API Key。请立即复制并妥善保存。
+                这是您唯一能看到完整 API Key 的机会。关闭此窗口后，系统将不再显示完整的 API
+                Key。请立即复制并妥善保存。
               </p>
             </div>
           </div>
         </div>
-      
+
         <!-- API Key 信息 -->
-        <div class="space-y-4 mb-6">
+        <div class="mb-6 space-y-4">
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">API Key 名称</label>
-            <div class="p-3 bg-gray-50 rounded-lg border">
-              <span class="text-gray-900 font-medium">{{ apiKey.name }}</span>
+            <label class="mb-2 block text-sm font-semibold text-gray-700">API Key 名称</label>
+            <div class="rounded-lg border bg-gray-50 p-3">
+              <span class="font-medium text-gray-900">{{ apiKey.name }}</span>
             </div>
           </div>
-        
+
           <div v-if="apiKey.description">
-            <label class="block text-sm font-semibold text-gray-700 mb-2">备注</label>
-            <div class="p-3 bg-gray-50 rounded-lg border">
+            <label class="mb-2 block text-sm font-semibold text-gray-700">备注</label>
+            <div class="rounded-lg border bg-gray-50 p-3">
               <span class="text-gray-700">{{ apiKey.description || '无描述' }}</span>
             </div>
           </div>
-        
+
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">API Key</label>
+            <label class="mb-2 block text-sm font-semibold text-gray-700">API Key</label>
             <div class="relative">
-              <div class="p-4 pr-14 bg-gray-900 rounded-lg border font-mono text-sm text-white break-all min-h-[60px] flex items-center">
+              <div
+                class="flex min-h-[60px] items-center break-all rounded-lg border bg-gray-900 p-4 pr-14 font-mono text-sm text-white"
+              >
                 {{ getDisplayedApiKey() }}
               </div>
-              <div class="absolute top-3 right-3">
-                <button 
-                  type="button"
-                  class="btn-icon-sm hover:bg-gray-800 bg-gray-700"
+              <div class="absolute right-3 top-3">
+                <button
+                  class="btn-icon-sm bg-gray-700 hover:bg-gray-800"
                   :title="showFullKey ? '隐藏API Key' : '显示完整API Key'"
+                  type="button"
                   @click="toggleKeyVisibility"
                 >
                   <i :class="['fas', showFullKey ? 'fa-eye-slash' : 'fa-eye', 'text-gray-300']" />
                 </button>
               </div>
             </div>
-            <p class="text-xs text-gray-500 mt-2">
+            <p class="mt-2 text-xs text-gray-500">
               点击眼睛图标切换显示模式，使用下方按钮复制完整 API Key
             </p>
           </div>
         </div>
-      
+
         <!-- 操作按钮 -->
         <div class="flex gap-3">
-          <button 
-            class="flex-1 btn btn-primary py-3 px-6 font-semibold flex items-center justify-center gap-2" 
+          <button
+            class="btn btn-primary flex flex-1 items-center justify-center gap-2 px-6 py-3 font-semibold"
             @click="copyApiKey"
           >
             <i class="fas fa-copy" />
             复制 API Key
           </button>
-          <button 
-            class="px-6 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors border border-gray-300" 
+          <button
+            class="rounded-xl border border-gray-300 bg-gray-200 px-6 py-3 font-semibold text-gray-800 transition-colors hover:bg-gray-300"
             @click="handleClose"
           >
             我已保存
@@ -126,13 +129,15 @@ const toggleKeyVisibility = () => {
 const getDisplayedApiKey = () => {
   const key = props.apiKey.apiKey || props.apiKey.key || ''
   if (!key) return ''
-  
+
   if (showFullKey.value) {
     return key
   } else {
     // 显示前8个字符和后4个字符，中间用●代替
     if (key.length <= 12) return key
-    return key.substring(0, 8) + '●'.repeat(Math.max(0, key.length - 12)) + key.substring(key.length - 4)
+    return (
+      key.substring(0, 8) + '●'.repeat(Math.max(0, key.length - 12)) + key.substring(key.length - 4)
+    )
   }
 }
 
@@ -143,7 +148,7 @@ const copyApiKey = async () => {
     showToast('API Key 不存在', 'error')
     return
   }
-  
+
   try {
     await navigator.clipboard.writeText(key)
     showToast('API Key 已复制到剪贴板', 'success')
@@ -202,9 +207,7 @@ const handleDirectClose = async () => {
     }
   } else {
     // 降级方案
-    const confirmed = confirm(
-      '您还没有保存API Key，关闭后将无法再次查看。\n\n确定要关闭吗？'
-    )
+    const confirmed = confirm('您还没有保存API Key，关闭后将无法再次查看。\n\n确定要关闭吗？')
     if (confirmed) {
       emit('close')
     }

@@ -2,13 +2,13 @@
 export const APP_CONFIG = {
   // 应用基础路径
   basePath: import.meta.env.VITE_APP_BASE_URL || (import.meta.env.DEV ? '/admin/' : '/web/admin/'),
-  
+
   // 应用标题
   title: import.meta.env.VITE_APP_TITLE || 'Claude Relay Service - 管理后台',
-  
+
   // 是否为开发环境
   isDev: import.meta.env.DEV,
-  
+
   // API 前缀
   apiPrefix: import.meta.env.DEV ? '/webapi' : ''
 }

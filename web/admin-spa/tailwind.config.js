@@ -1,16 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{vue,js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
       animation: {
-        'gradient': 'gradient 8s ease infinite',
-        'float': 'float 6s ease-in-out infinite',
+        gradient: 'gradient 8s ease infinite',
+        float: 'float 6s ease-in-out infinite',
         'float-delayed': 'float 6s ease-in-out infinite 2s',
-        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
       },
       keyframes: {
         gradient: {
@@ -32,7 +29,7 @@ export default {
           '50%': { opacity: 0.8 }
         }
       }
-    },
+    }
   },
-  plugins: [],
+  plugins: []
 }

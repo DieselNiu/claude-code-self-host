@@ -6,17 +6,39 @@ module.exports = {
     es2021: true
   },
   extends: [
+    'plugin:vue/vue3-strongly-recommended',
     'eslint:recommended',
-    'plugin:vue/vue3-recommended'
+    'plugin:prettier/recommended'
   ],
   parserOptions: {
-    ecmaVersion: 2021,
-    sourceType: 'module'
+    sourceType: 'module',
+    ecmaVersion: 'latest'
   },
+  plugins: ['prettier'],
   rules: {
     'vue/multi-word-component-names': 'off',
     'vue/no-v-html': 'off',
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off'
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'prettier/prettier': 'error',
+    'vue/attributes-order': [
+      'error',
+      {
+        order: [
+          'DEFINITION',
+          'LIST_RENDERING',
+          'CONDITIONALS',
+          'RENDER_MODIFIERS',
+          'GLOBAL',
+          'UNIQUE',
+          'TWO_WAY_BINDING',
+          'OTHER_DIRECTIVES',
+          'OTHER_ATTR',
+          'EVENTS',
+          'CONTENT'
+        ],
+        alphabetical: true
+      }
+    ]
   }
 }

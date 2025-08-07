@@ -1,87 +1,74 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen p-4 sm:p-6">
-    <div class="glass-strong rounded-xl sm:rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-10 w-full max-w-md shadow-2xl">
-      <div class="text-center mb-6 sm:mb-8">
+  <div class="flex min-h-screen items-center justify-center p-4 sm:p-6">
+    <div
+      class="glass-strong w-full max-w-md rounded-xl p-6 shadow-2xl sm:rounded-2xl sm:p-8 md:rounded-3xl md:p-10"
+    >
+      <div class="mb-6 text-center sm:mb-8">
         <!-- 使用自定义布局来保持登录页面的居中大logo样式 -->
-        <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-gray-300/30 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-sm overflow-hidden">
+        <div
+          class="mx-auto mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-gray-300/30 bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-sm sm:mb-6 sm:h-20 sm:w-20 sm:rounded-2xl"
+        >
           <template v-if="!oemLoading">
             <img
-              v-if="authStore.oemSettings.siteIconData || authStore.oemSettings.siteIcon" 
-              :src="authStore.oemSettings.siteIconData || authStore.oemSettings.siteIcon" 
+              v-if="authStore.oemSettings.siteIconData || authStore.oemSettings.siteIcon"
               alt="Logo"
-              class="w-10 h-10 sm:w-12 sm:h-12 object-contain"
-              @error="(e) => e.target.style.display = 'none'"
-            >
-            <i
-              v-else
-              class="fas fa-cloud text-2xl sm:text-3xl text-gray-700"
+              class="h-10 w-10 object-contain sm:h-12 sm:w-12"
+              :src="authStore.oemSettings.siteIconData || authStore.oemSettings.siteIcon"
+              @error="(e) => (e.target.style.display = 'none')"
             />
+            <i v-else class="fas fa-cloud text-2xl text-gray-700 sm:text-3xl" />
           </template>
-          <div
-            v-else
-            class="w-10 h-10 sm:w-12 sm:h-12 bg-gray-300/50 rounded animate-pulse"
-          />
+          <div v-else class="h-10 w-10 animate-pulse rounded bg-gray-300/50 sm:h-12 sm:w-12" />
         </div>
         <template v-if="!oemLoading && authStore.oemSettings.siteName">
-          <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2 header-title">
+          <h1 class="header-title mb-2 text-2xl font-bold text-white sm:text-3xl">
             {{ authStore.oemSettings.siteName }}
           </h1>
         </template>
         <div
           v-else-if="oemLoading"
-          class="h-8 sm:h-9 w-48 sm:w-64 bg-gray-300/50 rounded animate-pulse mx-auto mb-2"
+          class="mx-auto mb-2 h-8 w-48 animate-pulse rounded bg-gray-300/50 sm:h-9 sm:w-64"
         />
-        <p class="text-gray-600 text-base sm:text-lg">
-          管理后台
-        </p>
+        <p class="text-base text-gray-600 sm:text-lg">管理后台</p>
       </div>
-      
-      <form
-        class="space-y-4 sm:space-y-6"
-        @submit.prevent="handleLogin"
-      >
+
+      <form class="space-y-4 sm:space-y-6" @submit.prevent="handleLogin">
         <div>
-          <label class="block text-sm font-semibold text-gray-900 mb-2 sm:mb-3">用户名</label>
-          <input 
-            v-model="loginForm.username" 
-            type="text" 
-            required 
+          <label class="mb-2 block text-sm font-semibold text-gray-900 sm:mb-3">用户名</label>
+          <input
+            v-model="loginForm.username"
             class="form-input w-full"
             placeholder="请输入用户名"
-          >
+            required
+            type="text"
+          />
         </div>
-        
+
         <div>
-          <label class="block text-sm font-semibold text-gray-900 mb-2 sm:mb-3">密码</label>
-          <input 
-            v-model="loginForm.password" 
-            type="password" 
-            required 
+          <label class="mb-2 block text-sm font-semibold text-gray-900 sm:mb-3">密码</label>
+          <input
+            v-model="loginForm.password"
             class="form-input w-full"
             placeholder="请输入密码"
-          >
+            required
+            type="password"
+          />
         </div>
-        
-        <button 
-          type="submit" 
+
+        <button
+          class="btn btn-primary w-full px-4 py-3 text-base font-semibold sm:px-6 sm:py-4 sm:text-lg"
           :disabled="authStore.loginLoading"
-          class="btn btn-primary w-full py-3 sm:py-4 px-4 sm:px-6 text-base sm:text-lg font-semibold"
+          type="submit"
         >
-          <i
-            v-if="!authStore.loginLoading"
-            class="fas fa-sign-in-alt mr-2"
-          />
-          <div
-            v-if="authStore.loginLoading"
-            class="loading-spinner mr-2"
-          />
+          <i v-if="!authStore.loginLoading" class="fas fa-sign-in-alt mr-2" />
+          <div v-if="authStore.loginLoading" class="loading-spinner mr-2" />
           {{ authStore.loginLoading ? '登录中...' : '登录' }}
         </button>
       </form>
-      
+
       <div
         v-if="authStore.loginError"
-        class="mt-4 sm:mt-6 p-3 sm:p-4 bg-red-500/20 border border-red-500/30 rounded-lg sm:rounded-xl text-red-800 text-xs sm:text-sm text-center backdrop-blur-sm"
+        class="mt-4 rounded-lg border border-red-500/30 bg-red-500/20 p-3 text-center text-xs text-red-800 backdrop-blur-sm sm:mt-6 sm:rounded-xl sm:p-4 sm:text-sm"
       >
         <i class="fas fa-exclamation-triangle mr-2" />{{ authStore.loginError }}
       </div>
@@ -92,7 +79,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import LogoTitle from '@/components/common/LogoTitle.vue'
 
 const authStore = useAuthStore()
 const oemLoading = computed(() => authStore.oemLoading)

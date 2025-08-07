@@ -1,33 +1,32 @@
 <template>
   <Teleport to="body">
-    <div
-      v-if="show"
-      class="fixed inset-0 modal z-50 flex items-center justify-center p-4"
-    >
-      <div class="modal-content w-full max-w-md p-6 mx-auto">
-        <div class="flex items-start gap-4 mb-6">
-          <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
-            <i class="fas fa-exclamation text-white text-xl" />
+    <div v-if="show" class="modal fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="modal-content mx-auto w-full max-w-md p-6">
+        <div class="mb-6 flex items-start gap-4">
+          <div
+            class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500"
+          >
+            <i class="fas fa-exclamation text-xl text-white" />
           </div>
           <div class="flex-1">
-            <h3 class="text-lg font-bold text-gray-900 mb-2">
+            <h3 class="mb-2 text-lg font-bold text-gray-900">
               {{ title }}
             </h3>
-            <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line">
+            <p class="whitespace-pre-line text-sm leading-relaxed text-gray-600">
               {{ message }}
             </p>
           </div>
         </div>
-        
+
         <div class="flex gap-3">
-          <button 
-            class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+          <button
+            class="flex-1 rounded-xl bg-gray-100 px-4 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-200"
             @click="$emit('cancel')"
           >
             {{ cancelText }}
           </button>
-          <button 
-            class="flex-1 px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-medium hover:from-yellow-600 hover:to-orange-600 transition-colors shadow-sm"
+          <button
+            class="flex-1 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-2.5 font-medium text-white shadow-sm transition-colors hover:from-yellow-600 hover:to-orange-600"
             @click="$emit('confirm')"
           >
             {{ confirmText }}

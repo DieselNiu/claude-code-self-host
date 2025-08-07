@@ -4,8 +4,8 @@
   "description": "Claude Code API relay service with multi-account management, OpenAI compatibility, and API key authentication",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
+    "start": "npm run lint && node src/app.js",
+    "dev": "nodemon",
     "build:web": "cd web/admin-spa && npm run build",
     "install:web": "cd web/admin-spa && npm install",
     "update:pricing": "node scripts/update-model-pricing.js",
@@ -25,7 +25,10 @@
     "service:status": "node scripts/manage.js status",
     "service:logs": "node scripts/manage.js logs",
     "test": "jest",
-    "lint": "eslint src/**/*.js",
+    "lint": "eslint src/**/*.js cli/**/*.js scripts/**/*.js --fix",
+    "lint:check": "eslint src/**/*.js cli/**/*.js scripts/**/*.js",
+    "format": "prettier --write \"src/**/*.js\" \"cli/**/*.js\" \"scripts/**/*.js\"",
+    "format:check": "prettier --check \"src/**/*.js\" \"cli/**/*.js\" \"scripts/**/*.js\"",
     "docker:build": "docker build -t claude-relay-service .",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
@@ -69,8 +72,11 @@
   "devDependencies": {
     "@types/node": "^20.8.9",
     "eslint": "^8.53.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "jest": "^29.7.0",
     "nodemon": "^3.0.1",
+    "prettier": "^3.6.2",
     "supertest": "^6.3.3"
   },
   "engines": {

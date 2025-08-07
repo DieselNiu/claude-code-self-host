@@ -2,12 +2,15 @@
   <div ref="triggerRef" class="relative">
     <!-- 选择器主体 -->
     <div
-      class="form-input w-full cursor-pointer flex items-center justify-between"
+      class="form-input flex w-full cursor-pointer items-center justify-between"
       :class="{ 'opacity-50': disabled }"
       @click="!disabled && toggleDropdown()"
     >
       <span :class="modelValue ? 'text-gray-900' : 'text-gray-500'">{{ selectedLabel }}</span>
-      <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': showDropdown }" />
+      <i
+        class="fas fa-chevron-down text-gray-400 transition-transform duration-200"
+        :class="{ 'rotate-180': showDropdown }"
+      />
     </div>
 
     <!-- 下拉菜单 -->
@@ -23,26 +26,28 @@
         <div
           v-if="showDropdown"
           ref="dropdownRef"
-          class="absolute z-50 bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col"
+          class="absolute z-50 flex flex-col rounded-lg border border-gray-200 bg-white shadow-lg"
           :style="dropdownStyle"
         >
           <!-- 搜索框 -->
-          <div class="p-3 border-b border-gray-200 flex-shrink-0">
+          <div class="flex-shrink-0 border-b border-gray-200 p-3">
             <div class="relative">
               <input
                 ref="searchInput"
                 v-model="searchQuery"
-                type="text"
-                placeholder="搜索账号名称..."
                 class="form-input w-full text-sm"
-                style="padding-left: 40px; padding-right: 36px;"
+                placeholder="搜索账号名称..."
+                style="padding-left: 40px; padding-right: 36px"
+                type="text"
                 @input="handleSearch"
-              >
-              <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none" />
+              />
+              <i
+                class="fas fa-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400"
+              />
               <button
                 v-if="searchQuery"
-                type="button"
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                type="button"
                 @click="clearSearch"
               >
                 <i class="fas fa-times text-sm" />
@@ -51,10 +56,10 @@
           </div>
 
           <!-- 选项列表 -->
-          <div class="flex-1 overflow-y-auto custom-scrollbar">
+          <div class="custom-scrollbar flex-1 overflow-y-auto">
             <!-- 默认选项 -->
             <div
-              class="px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
+              class="cursor-pointer px-4 py-2 transition-colors hover:bg-gray-50"
               :class="{ 'bg-blue-50': !modelValue }"
               @click="selectAccount(null)"
             >
@@ -63,13 +68,11 @@
 
             <!-- 分组选项 -->
             <div v-if="filteredGroups.length > 0">
-              <div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50">
-                调度分组
-              </div>
+              <div class="bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-500">调度分组</div>
               <div
                 v-for="group in filteredGroups"
                 :key="`group:${group.id}`"
-                class="px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                class="cursor-pointer px-4 py-2 transition-colors hover:bg-gray-50"
                 :class="{ 'bg-blue-50': modelValue === `group:${group.id}` }"
                 @click="selectAccount(`group:${group.id}`)"
               >
@@ -82,13 +85,13 @@
 
             <!-- OAuth 账号 -->
             <div v-if="filteredOAuthAccounts.length > 0">
-              <div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50">
+              <div class="bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-500">
                 {{ platform === 'claude' ? 'Claude OAuth 专属账号' : 'OAuth 专属账号' }}
               </div>
               <div
                 v-for="account in filteredOAuthAccounts"
                 :key="account.id"
-                class="px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                class="cursor-pointer px-4 py-2 transition-colors hover:bg-gray-50"
                 :class="{ 'bg-blue-50': modelValue === account.id }"
                 @click="selectAccount(account.id)"
               >
@@ -96,8 +99,12 @@
                   <div>
                     <span class="text-gray-700">{{ account.name }}</span>
                     <span
-                      class="ml-2 text-xs px-2 py-0.5 rounded-full"
-                      :class="account.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
+                      class="ml-2 rounded-full px-2 py-0.5 text-xs"
+                      :class="
+                        account.status === 'active'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      "
                     >
                       {{ account.status === 'active' ? '正常' : '异常' }}
                     </span>
@@ -111,13 +118,13 @@
 
             <!-- Console 账号（仅 Claude） -->
             <div v-if="platform === 'claude' && filteredConsoleAccounts.length > 0">
-              <div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50">
+              <div class="bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-500">
                 Claude Console 专属账号
               </div>
               <div
                 v-for="account in filteredConsoleAccounts"
                 :key="account.id"
-                class="px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                class="cursor-pointer px-4 py-2 transition-colors hover:bg-gray-50"
                 :class="{ 'bg-blue-50': modelValue === `console:${account.id}` }"
                 @click="selectAccount(`console:${account.id}`)"
               >
@@ -125,8 +132,12 @@
                   <div>
                     <span class="text-gray-700">{{ account.name }}</span>
                     <span
-                      class="ml-2 text-xs px-2 py-0.5 rounded-full"
-                      :class="account.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
+                      class="ml-2 rounded-full px-2 py-0.5 text-xs"
+                      :class="
+                        account.status === 'active'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      "
                     >
                       {{ account.status === 'active' ? '正常' : '异常' }}
                     </span>
@@ -140,7 +151,7 @@
 
             <!-- 无搜索结果 -->
             <div v-if="searchQuery && !hasResults" class="px-4 py-8 text-center text-gray-500">
-              <i class="fas fa-search text-2xl mb-2" />
+              <i class="fas fa-search mb-2 text-2xl" />
               <p class="text-sm">没有找到匹配的账号</p>
             </div>
           </div>
@@ -199,23 +210,25 @@ const lastDirection = ref('') // 记住上次的显示方向
 const selectedLabel = computed(() => {
   // 如果没有选中值，显示默认选项文本
   if (!props.modelValue) return props.defaultOptionText
-  
+
   // 分组
   if (props.modelValue.startsWith('group:')) {
     const groupId = props.modelValue.substring(6)
-    const group = props.groups.find(g => g.id === groupId)
+    const group = props.groups.find((g) => g.id === groupId)
     return group ? `${group.name} (${group.memberCount || 0} 个成员)` : ''
   }
-  
+
   // Console 账号
   if (props.modelValue.startsWith('console:')) {
     const accountId = props.modelValue.substring(8)
-    const account = props.accounts.find(a => a.id === accountId && a.platform === 'claude-console')
+    const account = props.accounts.find(
+      (a) => a.id === accountId && a.platform === 'claude-console'
+    )
     return account ? `${account.name} (${account.status === 'active' ? '正常' : '异常'})` : ''
   }
-  
+
   // OAuth 账号
-  const account = props.accounts.find(a => a.id === props.modelValue)
+  const account = props.accounts.find((a) => a.id === props.modelValue)
   return account ? `${account.name} (${account.status === 'active' ? '正常' : '异常'})` : ''
 })
 
@@ -232,51 +245,50 @@ const sortedAccounts = computed(() => {
 const filteredGroups = computed(() => {
   if (!searchQuery.value) return props.groups
   const query = searchQuery.value.toLowerCase()
-  return props.groups.filter(group => 
-    group.name.toLowerCase().includes(query)
-  )
+  return props.groups.filter((group) => group.name.toLowerCase().includes(query))
 })
 
 // 过滤的 OAuth 账号
 const filteredOAuthAccounts = computed(() => {
-  let accounts = sortedAccounts.value.filter(a => 
-    a.accountType === 'dedicated' && 
-    (props.platform === 'claude' ? a.platform === 'claude-oauth' : a.platform !== 'claude-console')
+  let accounts = sortedAccounts.value.filter(
+    (a) =>
+      a.accountType === 'dedicated' &&
+      (props.platform === 'claude'
+        ? a.platform === 'claude-oauth'
+        : a.platform !== 'claude-console')
   )
-  
+
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    accounts = accounts.filter(account => 
-      account.name.toLowerCase().includes(query)
-    )
+    accounts = accounts.filter((account) => account.name.toLowerCase().includes(query))
   }
-  
+
   return accounts
 })
 
 // 过滤的 Console 账号
 const filteredConsoleAccounts = computed(() => {
   if (props.platform !== 'claude') return []
-  
-  let accounts = sortedAccounts.value.filter(a => 
-    a.accountType === 'dedicated' && a.platform === 'claude-console'
+
+  let accounts = sortedAccounts.value.filter(
+    (a) => a.accountType === 'dedicated' && a.platform === 'claude-console'
   )
-  
+
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    accounts = accounts.filter(account => 
-      account.name.toLowerCase().includes(query)
-    )
+    accounts = accounts.filter((account) => account.name.toLowerCase().includes(query))
   }
-  
+
   return accounts
 })
 
 // 是否有搜索结果
 const hasResults = computed(() => {
-  return filteredGroups.value.length > 0 || 
-         filteredOAuthAccounts.value.length > 0 || 
-         filteredConsoleAccounts.value.length > 0
+  return (
+    filteredGroups.value.length > 0 ||
+    filteredOAuthAccounts.value.length > 0 ||
+    filteredConsoleAccounts.value.length > 0
+  )
 })
 
 // 格式化日期
@@ -285,12 +297,13 @@ const formatDate = (dateString) => {
   const date = new Date(dateString)
   const now = new Date()
   const diffInHours = (now - date) / (1000 * 60 * 60)
-  
+
   if (diffInHours < 24) {
     return '今天创建'
   } else if (diffInHours < 48) {
     return '昨天创建'
-  } else if (diffInHours < 168) { // 7天内
+  } else if (diffInHours < 168) {
+    // 7天内
     return `${Math.floor(diffInHours / 24)} 天前`
   } else {
     return date.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })
@@ -300,28 +313,28 @@ const formatDate = (dateString) => {
 // 更新下拉菜单位置
 const updateDropdownPosition = () => {
   if (!showDropdown.value || !dropdownRef.value || !triggerRef.value) return
-  
+
   const trigger = triggerRef.value
   if (!trigger) return
-  
+
   const rect = trigger.getBoundingClientRect()
   const windowHeight = window.innerHeight
   const windowWidth = window.innerWidth
   const spaceBelow = windowHeight - rect.bottom
   const spaceAbove = rect.top
   const margin = 8 // 边距
-  
+
   // 获取下拉框的高度
-  const dropdownHeight = dropdownRef.value.offsetHeight
-  
+  // const dropdownHeight = dropdownRef.value.offsetHeight
+
   // 计算最大可用高度
   const maxHeightBelow = spaceBelow - margin
   const maxHeightAbove = spaceAbove - margin
-  
+
   // 决定显示方向和最大高度
   let showAbove = false
   let maxHeight = maxHeightBelow
-  
+
   // 优先使用上次的方向，除非空间不足
   if (lastDirection.value === 'above' && maxHeightAbove >= 150) {
     showAbove = true
@@ -336,10 +349,10 @@ const updateDropdownPosition = () => {
       maxHeight = maxHeightAbove
     }
   }
-  
+
   // 记住这次的方向
   lastDirection.value = showAbove ? 'above' : 'below'
-  
+
   // 确保下拉框不超出视窗左右边界
   let left = rect.left
   const dropdownWidth = rect.width
@@ -349,16 +362,13 @@ const updateDropdownPosition = () => {
   if (left < margin) {
     left = margin
   }
-  
+
   dropdownStyle.value = {
     position: 'fixed',
     left: `${left}px`,
     width: `${rect.width}px`,
     maxHeight: `${Math.min(maxHeight, 400)}px`, // 限制最大高度为400px
-    ...(showAbove
-      ? { bottom: `${windowHeight - rect.top}px` }
-      : { top: `${rect.bottom}px` }
-    )
+    ...(showAbove ? { bottom: `${windowHeight - rect.top}px` } : { top: `${rect.bottom}px` })
   }
 }
 
@@ -370,7 +380,7 @@ const toggleDropdown = () => {
     const windowHeight = window.innerHeight
     const spaceBelow = windowHeight - rect.bottom
     const margin = 8
-    
+
     // 预先设置一个合理的初始位置
     dropdownStyle.value = {
       position: 'fixed',

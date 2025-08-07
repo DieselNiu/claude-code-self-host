@@ -27,16 +27,16 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(credentials) {
     loginLoading.value = true
     loginError.value = ''
-    
+
     try {
       const result = await apiClient.post('/web/auth/login', credentials)
-      
+
       if (result.success) {
         authToken.value = result.token
         username.value = result.username || credentials.username
         isLoggedIn.value = true
         localStorage.setItem('authToken', result.token)
-        
+
         await router.push('/dashboard')
       } else {
         loginError.value = result.message || '登录失败'
@@ -71,7 +71,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (userResult.success && userResult.user) {
         username.value = userResult.user.username
       }
-      
+
       // 使用 dashboard 端点来验证 token
       // 如果 token 无效，会抛出错误
       const result = await apiClient.get('/admin/dashboard')
@@ -90,7 +90,7 @@ export const useAuthStore = defineStore('auth', () => {
       const result = await apiClient.get('/admin/oem-settings')
       if (result.success && result.data) {
         oemSettings.value = { ...oemSettings.value, ...result.data }
-        
+
         // 设置favicon
         if (result.data.siteIconData || result.data.siteIcon) {
           const link = document.querySelector("link[rel*='icon']") || document.createElement('link')
@@ -99,7 +99,7 @@ export const useAuthStore = defineStore('auth', () => {
           link.href = result.data.siteIconData || result.data.siteIcon
           document.getElementsByTagName('head')[0].appendChild(link)
         }
-        
+
         // 设置页面标题
         if (result.data.siteName) {
           document.title = `${result.data.siteName} - 管理后台`
@@ -121,12 +121,12 @@ export const useAuthStore = defineStore('auth', () => {
     loginLoading,
     oemSettings,
     oemLoading,
-    
+
     // 计算属性
     isAuthenticated,
     token,
     user,
-    
+
     // 方法
     login,
     logout,

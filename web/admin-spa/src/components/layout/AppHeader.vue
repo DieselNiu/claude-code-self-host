@@ -1,28 +1,32 @@
 <template>
   <!-- 顶部导航 -->
   <div
-    class="glass-strong rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 md:mb-8 shadow-xl"
-    style="z-index: 10; position: relative;"
+    class="glass-strong mb-4 rounded-xl p-3 shadow-xl sm:mb-6 sm:rounded-2xl sm:p-4 md:mb-8 md:rounded-3xl md:p-6"
+    style="z-index: 10; position: relative"
   >
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
-      <div class="flex items-center gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto justify-center sm:justify-start">
-        <LogoTitle 
+    <div class="flex flex-col items-center justify-between gap-3 sm:flex-row sm:gap-4">
+      <div
+        class="flex w-full items-center justify-center gap-2 sm:w-auto sm:justify-start sm:gap-3 md:gap-4"
+      >
+        <LogoTitle
           :loading="oemLoading"
-          :title="oemSettings.siteName"
-          subtitle="管理后台"
           :logo-src="oemSettings.siteIconData || oemSettings.siteIcon"
+          subtitle="管理后台"
+          :title="oemSettings.siteName"
           title-class="text-white"
         >
           <template #after-title>
             <!-- 版本信息 -->
             <div class="flex items-center gap-1 sm:gap-2">
-              <span class="text-xs sm:text-sm text-gray-400 font-mono">v{{ versionInfo.current || '...' }}</span>
+              <span class="font-mono text-xs text-gray-400 sm:text-sm"
+                >v{{ versionInfo.current || '...' }}</span
+              >
               <!-- 更新提示 -->
-              <a 
-                v-if="versionInfo.hasUpdate" 
+              <a
+                v-if="versionInfo.hasUpdate"
+                class="inline-flex animate-pulse items-center gap-1 rounded-full border border-green-600 bg-green-500 px-2 py-0.5 text-xs text-white transition-colors hover:bg-green-600"
                 :href="versionInfo.releaseInfo?.htmlUrl || '#'"
                 target="_blank"
-                class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-500 border border-green-600 rounded-full text-xs text-white hover:bg-green-600 transition-colors animate-pulse"
                 title="有新版本可用"
               >
                 <i class="fas fa-arrow-up text-[10px]" />
@@ -33,9 +37,9 @@
         </LogoTitle>
       </div>
       <!-- 用户菜单 -->
-      <div class="relative user-menu-container">
-        <button 
-          class="btn btn-primary px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-1 sm:gap-2 relative text-sm sm:text-base"
+      <div class="user-menu-container relative">
+        <button
+          class="btn btn-primary relative flex items-center gap-1 px-3 py-2 text-sm sm:gap-2 sm:px-4 sm:py-3 sm:text-base"
           @click="userMenuOpen = !userMenuOpen"
         >
           <i class="fas fa-user-circle" />
@@ -45,34 +49,31 @@
             :class="{ 'rotate-180': userMenuOpen }"
           />
         </button>
-        
+
         <!-- 悬浮菜单 -->
-        <div 
-          v-if="userMenuOpen" 
-          class="absolute right-0 top-full mt-2 w-48 sm:w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 user-menu-dropdown"
-          style="z-index: 999999;"
+        <div
+          v-if="userMenuOpen"
+          class="user-menu-dropdown absolute right-0 top-full mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-xl sm:w-56"
+          style="z-index: 999999"
           @click.stop
         >
           <!-- 版本信息 -->
-          <div class="px-4 py-3 border-b border-gray-100">
+          <div class="border-b border-gray-100 px-4 py-3">
             <div class="flex items-center justify-between text-sm">
               <span class="text-gray-500">当前版本</span>
               <span class="font-mono text-gray-700">v{{ versionInfo.current || '...' }}</span>
             </div>
-            <div
-              v-if="versionInfo.hasUpdate"
-              class="mt-2"
-            >
-              <div class="flex items-center justify-between text-sm mb-2">
-                <span class="text-green-600 font-medium">
+            <div v-if="versionInfo.hasUpdate" class="mt-2">
+              <div class="mb-2 flex items-center justify-between text-sm">
+                <span class="font-medium text-green-600">
                   <i class="fas fa-arrow-up mr-1" />有新版本
                 </span>
                 <span class="font-mono text-green-600">v{{ versionInfo.latest }}</span>
               </div>
-              <a 
+              <a
+                class="block w-full rounded-lg bg-green-500 px-3 py-1.5 text-center text-sm text-white transition-colors hover:bg-green-600"
                 :href="versionInfo.releaseInfo?.htmlUrl || '#'"
                 target="_blank"
-                class="block w-full text-center px-3 py-1.5 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors"
               >
                 <i class="fas fa-external-link-alt mr-1" />查看更新
               </a>
@@ -83,28 +84,22 @@
             >
               <i class="fas fa-spinner fa-spin mr-1" />检查更新中...
             </div>
-            <div
-              v-else
-              class="mt-2 text-center"
-            >
+            <div v-else class="mt-2 text-center">
               <!-- 已是最新版提醒 -->
-              <transition
-                name="fade"
-                mode="out-in"
-              >
+              <transition mode="out-in" name="fade">
                 <div
                   v-if="versionInfo.noUpdateMessage"
                   key="message"
-                  class="px-3 py-1.5 bg-green-100 border border-green-200 rounded-lg inline-block"
+                  class="inline-block rounded-lg border border-green-200 bg-green-100 px-3 py-1.5"
                 >
-                  <p class="text-xs text-green-700 font-medium">
+                  <p class="text-xs font-medium text-green-700">
                     <i class="fas fa-check-circle mr-1" />当前已是最新版本
                   </p>
                 </div>
-                <button 
+                <button
                   v-else
                   key="button"
-                  class="text-xs text-blue-500 hover:text-blue-700 transition-colors"
+                  class="text-xs text-blue-500 transition-colors hover:text-blue-700"
                   @click="checkForUpdates()"
                 >
                   <i class="fas fa-sync-alt mr-1" />检查更新
@@ -112,19 +107,19 @@
               </transition>
             </div>
           </div>
-          
-          <button 
-            class="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
+
+          <button
+            class="flex w-full items-center gap-3 px-4 py-3 text-left text-gray-700 transition-colors hover:bg-gray-50"
             @click="openChangePasswordModal"
           >
             <i class="fas fa-key text-blue-500" />
             <span>修改账户信息</span>
           </button>
-          
-          <hr class="my-2 border-gray-200">
-          
-          <button 
-            class="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
+
+          <hr class="my-2 border-gray-200" />
+
+          <button
+            class="flex w-full items-center gap-3 px-4 py-3 text-left text-gray-700 transition-colors hover:bg-gray-50"
             @click="logout"
           >
             <i class="fas fa-sign-out-alt text-red-500" />
@@ -134,117 +129,105 @@
       </div>
     </div>
   </div>
-  
+
   <!-- 修改账户信息模态框 -->
   <div
     v-if="showChangePasswordModal"
-    class="fixed inset-0 modal z-50 flex items-center justify-center p-3 sm:p-4"
+    class="modal fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
   >
-    <div class="modal-content w-full max-w-md p-4 sm:p-6 md:p-8 mx-auto max-h-[90vh] flex flex-col">
-      <div class="flex items-center justify-between mb-6">
+    <div class="modal-content mx-auto flex max-h-[90vh] w-full max-w-md flex-col p-4 sm:p-6 md:p-8">
+      <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600"
+          >
             <i class="fas fa-key text-white" />
           </div>
-          <h3 class="text-xl font-bold text-gray-900">
-            修改账户信息
-          </h3>
+          <h3 class="text-xl font-bold text-gray-900">修改账户信息</h3>
         </div>
-        <button 
-          class="text-gray-400 hover:text-gray-600 transition-colors"
+        <button
+          class="text-gray-400 transition-colors hover:text-gray-600"
           @click="closeChangePasswordModal"
         >
           <i class="fas fa-times text-xl" />
         </button>
       </div>
-      
+
       <form
-        class="space-y-6 modal-scroll-content custom-scrollbar flex-1"
+        class="modal-scroll-content custom-scrollbar flex-1 space-y-6"
         @submit.prevent="changePassword"
       >
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-3">当前用户名</label>
-          <input 
-            :value="currentUser.username || 'Admin'" 
-            type="text" 
+          <label class="mb-3 block text-sm font-semibold text-gray-700">当前用户名</label>
+          <input
+            class="form-input w-full cursor-not-allowed bg-gray-100"
             disabled
-            class="form-input w-full bg-gray-100 cursor-not-allowed"
-          >
-          <p class="text-xs text-gray-500 mt-2">
-            当前用户名，输入新用户名以修改
-          </p>
+            type="text"
+            :value="currentUser.username || 'Admin'"
+          />
+          <p class="mt-2 text-xs text-gray-500">当前用户名，输入新用户名以修改</p>
         </div>
-        
+
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-3">新用户名</label>
-          <input 
-            v-model="changePasswordForm.newUsername" 
-            type="text" 
+          <label class="mb-3 block text-sm font-semibold text-gray-700">新用户名</label>
+          <input
+            v-model="changePasswordForm.newUsername"
             class="form-input w-full"
             placeholder="输入新用户名（留空保持不变）"
-          >
-          <p class="text-xs text-gray-500 mt-2">
-            留空表示不修改用户名
-          </p>
+            type="text"
+          />
+          <p class="mt-2 text-xs text-gray-500">留空表示不修改用户名</p>
         </div>
-        
+
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-3">当前密码</label>
-          <input 
-            v-model="changePasswordForm.currentPassword" 
-            type="password" 
-            required
+          <label class="mb-3 block text-sm font-semibold text-gray-700">当前密码</label>
+          <input
+            v-model="changePasswordForm.currentPassword"
             class="form-input w-full"
             placeholder="请输入当前密码"
-          >
-        </div>
-        
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-3">新密码</label>
-          <input 
-            v-model="changePasswordForm.newPassword" 
-            type="password" 
             required
+            type="password"
+          />
+        </div>
+
+        <div>
+          <label class="mb-3 block text-sm font-semibold text-gray-700">新密码</label>
+          <input
+            v-model="changePasswordForm.newPassword"
             class="form-input w-full"
             placeholder="请输入新密码"
-          >
-          <p class="text-xs text-gray-500 mt-2">
-            密码长度至少8位
-          </p>
-        </div>
-        
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-3">确认新密码</label>
-          <input 
-            v-model="changePasswordForm.confirmPassword" 
-            type="password" 
             required
+            type="password"
+          />
+          <p class="mt-2 text-xs text-gray-500">密码长度至少8位</p>
+        </div>
+
+        <div>
+          <label class="mb-3 block text-sm font-semibold text-gray-700">确认新密码</label>
+          <input
+            v-model="changePasswordForm.confirmPassword"
             class="form-input w-full"
             placeholder="请再次输入新密码"
-          >
+            required
+            type="password"
+          />
         </div>
-        
+
         <div class="flex gap-3 pt-4">
-          <button 
-            type="button" 
-            class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors" 
+          <button
+            class="flex-1 rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+            type="button"
             @click="closeChangePasswordModal"
           >
             取消
           </button>
-          <button 
-            type="submit" 
+          <button
+            class="btn btn-primary flex-1 px-6 py-3 font-semibold"
             :disabled="changePasswordLoading"
-            class="btn btn-primary flex-1 py-3 px-6 font-semibold"
+            type="submit"
           >
-            <div
-              v-if="changePasswordLoading"
-              class="loading-spinner mr-2"
-            />
-            <i
-              v-else
-              class="fas fa-save mr-2"
-            />
+            <div v-if="changePasswordLoading" class="loading-spinner mr-2" />
+            <i v-else class="fas fa-save mr-2" />
             {{ changePasswordLoading ? '保存中...' : '保存修改' }}
           </button>
         </div>
@@ -300,30 +283,33 @@ const checkForUpdates = async () => {
   if (versionInfo.value.checkingUpdate) {
     return
   }
-  
+
   versionInfo.value.checkingUpdate = true
-  
+
   try {
     const result = await apiClient.get('/admin/check-updates')
-    
+
     if (result.success) {
       const data = result.data
-      
+
       versionInfo.value.current = data.current
       versionInfo.value.latest = data.latest
       versionInfo.value.hasUpdate = data.hasUpdate
       versionInfo.value.releaseInfo = data.releaseInfo
       versionInfo.value.lastChecked = new Date()
-      
+
       // 保存到localStorage
-      localStorage.setItem('versionInfo', JSON.stringify({
-        current: data.current,
-        latest: data.latest,
-        lastChecked: versionInfo.value.lastChecked,
-        hasUpdate: data.hasUpdate,
-        releaseInfo: data.releaseInfo
-      }))
-      
+      localStorage.setItem(
+        'versionInfo',
+        JSON.stringify({
+          current: data.current,
+          latest: data.latest,
+          lastChecked: versionInfo.value.lastChecked,
+          hasUpdate: data.hasUpdate,
+          releaseInfo: data.releaseInfo
+        })
+      )
+
       // 如果没有更新，显示提醒
       if (!data.hasUpdate) {
         versionInfo.value.noUpdateMessage = true
@@ -335,7 +321,7 @@ const checkForUpdates = async () => {
     }
   } catch (error) {
     console.error('Error checking for updates:', error)
-    
+
     // 尝试从localStorage读取缓存的版本信息
     const cached = localStorage.getItem('versionInfo')
     if (cached) {
@@ -372,26 +358,28 @@ const changePassword = async () => {
     showToast('两次输入的密码不一致', 'error')
     return
   }
-  
+
   if (changePasswordForm.newPassword.length < 8) {
     showToast('新密码长度至少8位', 'error')
     return
   }
-  
+
   changePasswordLoading.value = true
-  
+
   try {
     const data = await apiClient.post('/web/auth/change-password', {
       currentPassword: changePasswordForm.currentPassword,
       newPassword: changePasswordForm.newPassword,
       newUsername: changePasswordForm.newUsername || undefined
     })
-    
+
     if (data.success) {
-      const message = changePasswordForm.newUsername ? '账户信息修改成功，请重新登录' : '密码修改成功，请重新登录'
+      const message = changePasswordForm.newUsername
+        ? '账户信息修改成功，请重新登录'
+        : '密码修改成功，请重新登录'
       showToast(message, 'success')
       closeChangePasswordModal()
-      
+
       // 延迟后退出登录
       setTimeout(() => {
         authStore.logout()
@@ -427,12 +415,12 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   checkForUpdates()
-  
+
   // 设置自动检查更新（每小时检查一次）
   setInterval(() => {
     checkForUpdates()
   }, 3600000) // 1小时
-  
+
   document.addEventListener('click', handleClickOutside)
 })
 
@@ -448,10 +436,12 @@ onUnmounted(() => {
 }
 
 /* fade过渡动画 */
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

@@ -1,116 +1,92 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 modal z-50 flex items-center justify-center p-4">
-      <div class="modal-content w-full max-w-md p-8 mx-auto max-h-[90vh] flex flex-col">
-        <div class="flex items-center justify-between mb-6">
+    <div class="modal fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="modal-content mx-auto flex max-h-[90vh] w-full max-w-md flex-col p-8">
+        <div class="mb-6 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+            <div
+              class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600"
+            >
               <i class="fas fa-clock text-white" />
             </div>
-            <h3 class="text-xl font-bold text-gray-900">
-              续期 API Key
-            </h3>
+            <h3 class="text-xl font-bold text-gray-900">续期 API Key</h3>
           </div>
-          <button 
-            class="text-gray-400 hover:text-gray-600 transition-colors"
+          <button
+            class="text-gray-400 transition-colors hover:text-gray-600"
             @click="$emit('close')"
           >
             <i class="fas fa-times text-xl" />
           </button>
         </div>
-      
-        <div class="space-y-6 modal-scroll-content custom-scrollbar flex-1">
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+
+        <div class="modal-scroll-content custom-scrollbar flex-1 space-y-6">
+          <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <div class="flex items-start gap-3">
-              <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-info text-white text-sm" />
+              <div
+                class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-500"
+              >
+                <i class="fas fa-info text-sm text-white" />
               </div>
               <div>
-                <h4 class="font-semibold text-gray-800 mb-1">
-                  API Key 信息
-                </h4>
+                <h4 class="mb-1 font-semibold text-gray-800">API Key 信息</h4>
                 <p class="text-sm text-gray-700">
                   {{ apiKey.name }}
                 </p>
-                <p class="text-xs text-gray-600 mt-1">
-                  当前过期时间：{{ apiKey.expiresAt ? formatExpireDate(apiKey.expiresAt) : '永不过期' }}
+                <p class="mt-1 text-xs text-gray-600">
+                  当前过期时间：{{
+                    apiKey.expiresAt ? formatExpireDate(apiKey.expiresAt) : '永不过期'
+                  }}
                 </p>
               </div>
             </div>
           </div>
-        
+
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-3">续期时长</label>
-            <select 
-              v-model="form.renewDuration" 
+            <label class="mb-3 block text-sm font-semibold text-gray-700">续期时长</label>
+            <select
+              v-model="form.renewDuration"
               class="form-input w-full"
               @change="updateRenewExpireAt"
             >
-              <option value="7d">
-                延长 7 天
-              </option>
-              <option value="30d">
-                延长 30 天
-              </option>
-              <option value="90d">
-                延长 90 天
-              </option>
-              <option value="180d">
-                延长 180 天
-              </option>
-              <option value="365d">
-                延长 365 天
-              </option>
-              <option value="custom">
-                自定义日期
-              </option>
-              <option value="permanent">
-                设为永不过期
-              </option>
+              <option value="7d">延长 7 天</option>
+              <option value="30d">延长 30 天</option>
+              <option value="90d">延长 90 天</option>
+              <option value="180d">延长 180 天</option>
+              <option value="365d">延长 365 天</option>
+              <option value="custom">自定义日期</option>
+              <option value="permanent">设为永不过期</option>
             </select>
-            <div
-              v-if="form.renewDuration === 'custom'"
-              class="mt-3"
-            >
-              <input 
-                v-model="form.customExpireDate" 
-                type="datetime-local" 
+            <div v-if="form.renewDuration === 'custom'" class="mt-3">
+              <input
+                v-model="form.customExpireDate"
                 class="form-input w-full"
                 :min="minDateTime"
+                type="datetime-local"
                 @change="updateCustomRenewExpireAt"
-              >
+              />
             </div>
-            <p
-              v-if="form.newExpiresAt"
-              class="text-xs text-gray-500 mt-2"
-            >
+            <p v-if="form.newExpiresAt" class="mt-2 text-xs text-gray-500">
               新的过期时间：{{ formatExpireDate(form.newExpiresAt) }}
             </p>
           </div>
         </div>
-      
+
         <div class="flex gap-3 pt-4">
-          <button 
-            type="button" 
-            class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors" 
+          <button
+            class="flex-1 rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+            type="button"
             @click="$emit('close')"
           >
             取消
           </button>
-          <button 
-            type="button" 
+          <button
+            class="btn btn-primary flex-1 px-6 py-3 font-semibold"
             :disabled="loading || !form.renewDuration"
-            class="btn btn-primary flex-1 py-3 px-6 font-semibold"
+            type="button"
             @click="renewApiKey"
           >
-            <div
-              v-if="loading"
-              class="loading-spinner mr-2"
-            />
-            <i
-              v-else
-              class="fas fa-clock mr-2"
-            />
+            <div v-if="loading" class="loading-spinner mr-2" />
+            <i v-else class="fas fa-clock mr-2" />
             {{ loading ? '续期中...' : '确认续期' }}
           </button>
         </div>
@@ -122,7 +98,6 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { showToast } from '@/utils/toast'
-import { useAuthStore } from '@/stores/auth'
 import { apiClient } from '@/config/api'
 
 const props = defineProps({
@@ -134,7 +109,6 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'success'])
 
-const authStore = useAuthStore()
 const loading = ref(false)
 
 // 表单数据
@@ -174,28 +148,29 @@ const updateRenewExpireAt = () => {
     form.newExpiresAt = null
     return
   }
-  
+
   if (form.renewDuration === 'permanent') {
     form.newExpiresAt = null
     return
   }
-  
+
   if (form.renewDuration === 'custom') {
     return
   }
-  
+
   // 计算新的过期时间
-  const baseDate = props.apiKey.expiresAt && new Date(props.apiKey.expiresAt) > new Date() 
-    ? new Date(props.apiKey.expiresAt) 
-    : new Date()
-  
+  const baseDate =
+    props.apiKey.expiresAt && new Date(props.apiKey.expiresAt) > new Date()
+      ? new Date(props.apiKey.expiresAt)
+      : new Date()
+
   const duration = form.renewDuration
   const match = duration.match(/(\d+)([dhmy])/)
-  
+
   if (match) {
     const [, value, unit] = match
     const num = parseInt(value)
-    
+
     switch (unit) {
       case 'd':
         baseDate.setDate(baseDate.getDate() + num)
@@ -210,7 +185,7 @@ const updateRenewExpireAt = () => {
         baseDate.setFullYear(baseDate.getFullYear() + num)
         break
     }
-    
+
     form.newExpiresAt = baseDate.toISOString()
   }
 }
@@ -225,14 +200,14 @@ const updateCustomRenewExpireAt = () => {
 // 续期 API Key
 const renewApiKey = async () => {
   loading.value = true
-  
+
   try {
     const data = {
       expiresAt: form.renewDuration === 'permanent' ? null : form.newExpiresAt
     }
-    
+
     const result = await apiClient.put(`/admin/api-keys/${props.apiKey.id}`, data)
-    
+
     if (result.success) {
       showToast('API Key 续期成功', 'success')
       emit('success')

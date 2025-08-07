@@ -1,6 +1,6 @@
-const redis = require('../models/redis');
-const logger = require('../utils/logger');
-const { v4: uuidv4 } = require('uuid');
+const redis = require('../models/redis')
+const logger = require('../utils/logger')
+const { v4: uuidv4 } = require('uuid')
 
 /**
  * Token 刷新锁服务
@@ -8,10 +8,9 @@ const { v4: uuidv4 } = require('uuid');
  */
 class TokenRefreshService {
   constructor() {
-    this.lockTTL = 60; // 锁的TTL: 60秒（token刷新通常在30秒内完成）
-    this.lockValue = new Map(); // 存储每个锁的唯一值
+    this.lockTTL = 60 // 锁的TTL: 60秒（token刷新通常在30秒内完成）
+    this.lockValue = new Map() // 存储每个锁的唯一值
   }
-
 
   /**
    * 获取分布式锁
@@ -19,19 +18,19 @@ class TokenRefreshService {
    */
   async acquireLock(lockKey) {
     try {
-      const client = redis.getClientSafe();
-      const lockId = uuidv4();
-      const result = await client.set(lockKey, lockId, 'NX', 'EX', this.lockTTL);
-      
+      const client = redis.getClientSafe()
+      const lockId = uuidv4()
+      const result = await client.set(lockKey, lockId, 'NX', 'EX', this.lockTTL)
+
       if (result === 'OK') {
-        this.lockValue.set(lockKey, lockId);
-        logger.debug(`🔒 Acquired lock ${lockKey} with ID ${lockId}, TTL: ${this.lockTTL}s`);
-        return true;
+        this.lockValue.set(lockKey, lockId)
+        logger.debug(`🔒 Acquired lock ${lockKey} with ID ${lockId}, TTL: ${this.lockTTL}s`)
+        return true
       }
-      return false;
+      return false
     } catch (error) {
-      logger.error(`Failed to acquire lock ${lockKey}:`, error);
-      return false;
+      logger.error(`Failed to acquire lock ${lockKey}:`, error)
+      return false
     }
   }
 
@@ -41,12 +40,12 @@ class TokenRefreshService {
    */
   async releaseLock(lockKey) {
     try {
-      const client = redis.getClientSafe();
-      const lockId = this.lockValue.get(lockKey);
-      
+      const client = redis.getClientSafe()
+      const lockId = this.lockValue.get(lockKey)
+
       if (!lockId) {
-        logger.warn(`⚠️ No lock ID found for ${lockKey}, skipping release`);
-        return;
+        logger.warn(`⚠️ No lock ID found for ${lockKey}, skipping release`)
+        return
       }
 
       // Lua 脚本：只有当值匹配时才删除
@@ -56,18 +55,18 @@ class TokenRefreshService {
         else
           return 0
         end
-      `;
-      
-      const result = await client.eval(luaScript, 1, lockKey, lockId);
-      
+      `
+
+      const result = await client.eval(luaScript, 1, lockKey, lockId)
+
       if (result === 1) {
-        this.lockValue.delete(lockKey);
-        logger.debug(`🔓 Released lock ${lockKey} with ID ${lockId}`);
+        this.lockValue.delete(lockKey)
+        logger.debug(`🔓 Released lock ${lockKey} with ID ${lockId}`)
       } else {
-        logger.warn(`⚠️ Lock ${lockKey} was not released - value mismatch or already expired`);
+        logger.warn(`⚠️ Lock ${lockKey} was not released - value mismatch or already expired`)
       }
     } catch (error) {
-      logger.error(`Failed to release lock ${lockKey}:`, error);
+      logger.error(`Failed to release lock ${lockKey}:`, error)
     }
   }
 
@@ -78,8 +77,8 @@ class TokenRefreshService {
    * @returns {Promise<boolean>} 是否成功获取锁
    */
   async acquireRefreshLock(accountId, platform = 'claude') {
-    const lockKey = `token_refresh_lock:${platform}:${accountId}`;
-    return await this.acquireLock(lockKey);
+    const lockKey = `token_refresh_lock:${platform}:${accountId}`
+    return await this.acquireLock(lockKey)
   }
 
   /**
@@ -88,8 +87,8 @@ class TokenRefreshService {
    * @param {string} platform - 平台类型 (claude/gemini)
    */
   async releaseRefreshLock(accountId, platform = 'claude') {
-    const lockKey = `token_refresh_lock:${platform}:${accountId}`;
-    await this.releaseLock(lockKey);
+    const lockKey = `token_refresh_lock:${platform}:${accountId}`
+    await this.releaseLock(lockKey)
   }
 
   /**
@@ -99,14 +98,14 @@ class TokenRefreshService {
    * @returns {Promise<boolean>} 锁是否存在
    */
   async isRefreshLocked(accountId, platform = 'claude') {
-    const lockKey = `token_refresh_lock:${platform}:${accountId}`;
+    const lockKey = `token_refresh_lock:${platform}:${accountId}`
     try {
-      const client = redis.getClientSafe();
-      const exists = await client.exists(lockKey);
-      return exists === 1;
+      const client = redis.getClientSafe()
+      const exists = await client.exists(lockKey)
+      return exists === 1
     } catch (error) {
-      logger.error(`Failed to check lock status ${lockKey}:`, error);
-      return false;
+      logger.error(`Failed to check lock status ${lockKey}:`, error)
+      return false
     }
   }
 
@@ -117,14 +116,14 @@ class TokenRefreshService {
    * @returns {Promise<number>} 剩余秒数，-1表示锁不存在
    */
   async getLockTTL(accountId, platform = 'claude') {
-    const lockKey = `token_refresh_lock:${platform}:${accountId}`;
+    const lockKey = `token_refresh_lock:${platform}:${accountId}`
     try {
-      const client = redis.getClientSafe();
-      const ttl = await client.ttl(lockKey);
-      return ttl;
+      const client = redis.getClientSafe()
+      const ttl = await client.ttl(lockKey)
+      return ttl
     } catch (error) {
-      logger.error(`Failed to get lock TTL ${lockKey}:`, error);
-      return -1;
+      logger.error(`Failed to get lock TTL ${lockKey}:`, error)
+      return -1
     }
   }
 
@@ -133,12 +132,12 @@ class TokenRefreshService {
    * 在进程退出时调用，避免内存泄漏
    */
   cleanup() {
-    this.lockValue.clear();
-    logger.info('🧹 Cleaned up local lock records');
+    this.lockValue.clear()
+    logger.info('🧹 Cleaned up local lock records')
   }
 }
 
 // 创建单例实例
-const tokenRefreshService = new TokenRefreshService();
+const tokenRefreshService = new TokenRefreshService()
 
-module.exports = tokenRefreshService;
+module.exports = tokenRefreshService

@@ -1,64 +1,63 @@
-const pricingService = require('../services/pricingService');
+const pricingService = require('../services/pricingService')
 
 // Claude模型价格配置 (USD per 1M tokens) - 备用定价
 const MODEL_PRICING = {
   // Claude 3.5 Sonnet
   'claude-3-5-sonnet-20241022': {
-    input: 3.00,
-    output: 15.00,
+    input: 3.0,
+    output: 15.0,
     cacheWrite: 3.75,
-    cacheRead: 0.30
+    cacheRead: 0.3
   },
   'claude-sonnet-4-20250514': {
-    input: 3.00,
-    output: 15.00,
+    input: 3.0,
+    output: 15.0,
     cacheWrite: 3.75,
-    cacheRead: 0.30
+    cacheRead: 0.3
   },
-  
+
   // Claude 3.5 Haiku
   'claude-3-5-haiku-20241022': {
     input: 0.25,
     output: 1.25,
-    cacheWrite: 0.30,
+    cacheWrite: 0.3,
     cacheRead: 0.03
   },
-  
+
   // Claude 3 Opus
   'claude-3-opus-20240229': {
-    input: 15.00,
-    output: 75.00,
+    input: 15.0,
+    output: 75.0,
     cacheWrite: 18.75,
-    cacheRead: 1.50
+    cacheRead: 1.5
   },
-  
+
   // Claude 3 Sonnet
   'claude-3-sonnet-20240229': {
-    input: 3.00,
-    output: 15.00,
+    input: 3.0,
+    output: 15.0,
     cacheWrite: 3.75,
-    cacheRead: 0.30
+    cacheRead: 0.3
   },
-  
+
   // Claude 3 Haiku
   'claude-3-haiku-20240307': {
     input: 0.25,
     output: 1.25,
-    cacheWrite: 0.30,
+    cacheWrite: 0.3,
     cacheRead: 0.03
   },
-  
+
   // 默认定价（用于未知模型）
-  'unknown': {
-    input: 3.00,
-    output: 15.00,
+  unknown: {
+    input: 3.0,
+    output: 15.0,
     cacheWrite: 3.75,
-    cacheRead: 0.30
+    cacheRead: 0.3
   }
-};
+}
 
 class CostCalculator {
-  
   /**
    * 计算单次请求的费用
    * @param {Object} usage - 使用量数据
@@ -70,16 +69,16 @@ class CostCalculator {
    * @returns {Object} 费用详情
    */
   static calculateCost(usage, model = 'unknown') {
-    const inputTokens = usage.input_tokens || 0;
-    const outputTokens = usage.output_tokens || 0;
-    const cacheCreateTokens = usage.cache_creation_input_tokens || 0;
-    const cacheReadTokens = usage.cache_read_input_tokens || 0;
-    
+    const inputTokens = usage.input_tokens || 0
+    const outputTokens = usage.output_tokens || 0
+    const cacheCreateTokens = usage.cache_creation_input_tokens || 0
+    const cacheReadTokens = usage.cache_read_input_tokens || 0
+
     // 优先使用动态价格服务
-    const pricingData = pricingService.getModelPricing(model);
-    let pricing;
-    let usingDynamicPricing = false;
-    
+    const pricingData = pricingService.getModelPricing(model)
+    let pricing
+    let usingDynamicPricing = false
+
     if (pricingData) {
       // 转换动态价格格式为内部格式
       pricing = {
@@ -87,21 +86,21 @@ class CostCalculator {
         output: (pricingData.output_cost_per_token || 0) * 1000000,
         cacheWrite: (pricingData.cache_creation_input_token_cost || 0) * 1000000,
         cacheRead: (pricingData.cache_read_input_token_cost || 0) * 1000000
-      };
-      usingDynamicPricing = true;
+      }
+      usingDynamicPricing = true
     } else {
       // 回退到静态价格
-      pricing = MODEL_PRICING[model] || MODEL_PRICING['unknown'];
+      pricing = MODEL_PRICING[model] || MODEL_PRICING['unknown']
     }
-    
+
     // 计算各类型token的费用 (USD)
-    const inputCost = (inputTokens / 1000000) * pricing.input;
-    const outputCost = (outputTokens / 1000000) * pricing.output;
-    const cacheWriteCost = (cacheCreateTokens / 1000000) * pricing.cacheWrite;
-    const cacheReadCost = (cacheReadTokens / 1000000) * pricing.cacheRead;
-    
-    const totalCost = inputCost + outputCost + cacheWriteCost + cacheReadCost;
-    
+    const inputCost = (inputTokens / 1000000) * pricing.input
+    const outputCost = (outputTokens / 1000000) * pricing.output
+    const cacheWriteCost = (cacheCreateTokens / 1000000) * pricing.cacheWrite
+    const cacheReadCost = (cacheReadTokens / 1000000) * pricing.cacheRead
+
+    const totalCost = inputCost + outputCost + cacheWriteCost + cacheReadCost
+
     return {
       model,
       pricing,
@@ -128,9 +127,9 @@ class CostCalculator {
         cacheRead: this.formatCost(cacheReadCost),
         total: this.formatCost(totalCost)
       }
-    };
+    }
   }
-  
+
   /**
    * 计算聚合使用量的费用
    * @param {Object} aggregatedUsage - 聚合使用量数据
@@ -141,39 +140,41 @@ class CostCalculator {
     const usage = {
       input_tokens: aggregatedUsage.inputTokens || aggregatedUsage.totalInputTokens || 0,
       output_tokens: aggregatedUsage.outputTokens || aggregatedUsage.totalOutputTokens || 0,
-      cache_creation_input_tokens: aggregatedUsage.cacheCreateTokens || aggregatedUsage.totalCacheCreateTokens || 0,
-      cache_read_input_tokens: aggregatedUsage.cacheReadTokens || aggregatedUsage.totalCacheReadTokens || 0
-    };
-    
-    return this.calculateCost(usage, model);
+      cache_creation_input_tokens:
+        aggregatedUsage.cacheCreateTokens || aggregatedUsage.totalCacheCreateTokens || 0,
+      cache_read_input_tokens:
+        aggregatedUsage.cacheReadTokens || aggregatedUsage.totalCacheReadTokens || 0
+    }
+
+    return this.calculateCost(usage, model)
   }
-  
+
   /**
    * 获取模型定价信息
    * @param {string} model - 模型名称
    * @returns {Object} 定价信息
    */
   static getModelPricing(model = 'unknown') {
-    return MODEL_PRICING[model] || MODEL_PRICING['unknown'];
+    return MODEL_PRICING[model] || MODEL_PRICING['unknown']
   }
-  
+
   /**
    * 获取所有支持的模型和定价
    * @returns {Object} 所有模型定价
    */
   static getAllModelPricing() {
-    return { ...MODEL_PRICING };
+    return { ...MODEL_PRICING }
   }
-  
+
   /**
    * 验证模型是否支持
    * @param {string} model - 模型名称
    * @returns {boolean} 是否支持
    */
   static isModelSupported(model) {
-    return !!MODEL_PRICING[model];
+    return !!MODEL_PRICING[model]
   }
-  
+
   /**
    * 格式化费用显示
    * @param {number} cost - 费用金额
@@ -182,14 +183,14 @@ class CostCalculator {
    */
   static formatCost(cost, decimals = 6) {
     if (cost >= 1) {
-      return `$${cost.toFixed(2)}`;
+      return `$${cost.toFixed(2)}`
     } else if (cost >= 0.001) {
-      return `$${cost.toFixed(4)}`;
+      return `$${cost.toFixed(4)}`
     } else {
-      return `$${cost.toFixed(decimals)}`;
+      return `$${cost.toFixed(decimals)}`
     }
   }
-  
+
   /**
    * 计算费用节省（使用缓存的节省）
    * @param {Object} usage - 使用量数据
@@ -197,15 +198,15 @@ class CostCalculator {
    * @returns {Object} 节省信息
    */
   static calculateCacheSavings(usage, model = 'unknown') {
-    const pricing = this.getModelPricing(model);
-    const cacheReadTokens = usage.cache_read_input_tokens || 0;
-    
+    const pricing = this.getModelPricing(model)
+    const cacheReadTokens = usage.cache_read_input_tokens || 0
+
     // 如果这些token不使用缓存，需要按正常input价格计费
-    const normalCost = (cacheReadTokens / 1000000) * pricing.input;
-    const cacheCost = (cacheReadTokens / 1000000) * pricing.cacheRead;
-    const savings = normalCost - cacheCost;
-    const savingsPercentage = normalCost > 0 ? (savings / normalCost) * 100 : 0;
-    
+    const normalCost = (cacheReadTokens / 1000000) * pricing.input
+    const cacheCost = (cacheReadTokens / 1000000) * pricing.cacheRead
+    const savings = normalCost - cacheCost
+    const savingsPercentage = normalCost > 0 ? (savings / normalCost) * 100 : 0
+
     return {
       normalCost,
       cacheCost,
@@ -217,8 +218,8 @@ class CostCalculator {
         savings: this.formatCost(savings),
         savingsPercentage: `${savingsPercentage.toFixed(1)}%`
       }
-    };
+    }
   }
 }
 
-module.exports = CostCalculator;
+module.exports = CostCalculator

@@ -4,11 +4,7 @@
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        :class="[
-          'toast',
-          `toast-${toast.type}`,
-          toast.isVisible ? 'toast-show' : 'toast-hide'
-        ]"
+        :class="['toast', `toast-${toast.type}`, toast.isVisible ? 'toast-show' : 'toast-hide']"
         @click="removeToast(toast.id)"
       >
         <div class="toast-content">
@@ -16,24 +12,18 @@
             <i :class="getIconClass(toast.type)" />
           </div>
           <div class="toast-body">
-            <div
-              v-if="toast.title"
-              class="toast-title"
-            >
+            <div v-if="toast.title" class="toast-title">
               {{ toast.title }}
             </div>
             <div class="toast-message">
               {{ toast.message }}
             </div>
           </div>
-          <button 
-            class="toast-close"
-            @click.stop="removeToast(toast.id)"
-          >
+          <button class="toast-close" @click.stop="removeToast(toast.id)">
             <i class="fas fa-times" />
           </button>
         </div>
-        <div 
+        <div
           v-if="toast.duration > 0"
           class="toast-progress"
           :style="{ animationDuration: `${toast.duration}ms` }"
@@ -72,34 +62,34 @@ const addToast = (message, type = 'info', title = null, duration = 5000) => {
     duration,
     isVisible: false
   }
-  
+
   toasts.value.push(toast)
-  
+
   // 下一帧显示动画
   setTimeout(() => {
     toast.isVisible = true
   }, 10)
-  
+
   // 自动移除
   if (duration > 0) {
     setTimeout(() => {
       removeToast(id)
     }, duration)
   }
-  
+
   return id
 }
 
 // 移除Toast
 const removeToast = (id) => {
-  const index = toasts.value.findIndex(toast => toast.id === id)
+  const index = toasts.value.findIndex((toast) => toast.id === id)
   if (index > -1) {
     const toast = toasts.value[index]
     toast.isVisible = false
-    
+
     // 等待动画完成后移除
     setTimeout(() => {
-      const currentIndex = toasts.value.findIndex(t => t.id === id)
+      const currentIndex = toasts.value.findIndex((t) => t.id === id)
       if (currentIndex > -1) {
         toasts.value.splice(currentIndex, 1)
       }
@@ -109,10 +99,10 @@ const removeToast = (id) => {
 
 // 清除所有Toast
 const clearAllToasts = () => {
-  toasts.value.forEach(toast => {
+  toasts.value.forEach((toast) => {
     toast.isVisible = false
   })
-  
+
   setTimeout(() => {
     toasts.value.length = 0
   }, 300)
@@ -351,7 +341,7 @@ defineExpose({
     right: 10px;
     left: 10px;
   }
-  
+
   .toast {
     min-width: auto;
     max-width: none;

@@ -1,42 +1,39 @@
 <template>
   <Teleport to="body">
-    <div 
-      v-if="show"
-      class="fixed inset-0 modal z-50 flex items-center justify-center p-4"
-    >
+    <div v-if="show" class="modal fixed inset-0 z-50 flex items-center justify-center p-4">
       <!-- 模态框内容 -->
-      <div class="modal-content w-full max-w-lg p-8 mx-auto">
+      <div class="modal-content mx-auto w-full max-w-lg p-8">
         <!-- 头部 -->
-        <div class="flex items-center justify-between mb-6">
+        <div class="mb-6 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+            <div
+              class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600"
+            >
               <i class="fas fa-clock text-white" />
             </div>
             <div>
-              <h3 class="text-xl font-bold text-gray-900">
-                修改过期时间
-              </h3>
+              <h3 class="text-xl font-bold text-gray-900">修改过期时间</h3>
               <p class="text-sm text-gray-600">
                 为 "{{ apiKey.name || 'API Key' }}" 设置新的过期时间
               </p>
             </div>
           </div>
           <button
-            class="text-gray-400 hover:text-gray-600 transition-colors"
+            class="text-gray-400 transition-colors hover:text-gray-600"
             @click="$emit('close')"
           >
             <i class="fas fa-times text-xl" />
           </button>
         </div>
-        
+
         <div class="space-y-6">
           <!-- 当前状态显示 -->
-          <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
+          <div
+            class="rounded-lg border border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-4"
+          >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-xs text-gray-600 font-medium mb-1">
-                  当前过期时间
-                </p>
+                <p class="mb-1 text-xs font-medium text-gray-600">当前过期时间</p>
                 <p class="text-sm font-semibold text-gray-800">
                   <template v-if="apiKey.expiresAt">
                     {{ formatExpireDate(apiKey.expiresAt) }}
@@ -54,26 +51,28 @@
                   </template>
                 </p>
               </div>
-              <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
+              <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-white shadow-sm">
                 <i
                   :class="[
                     'fas fa-hourglass-half text-lg',
-                    apiKey.expiresAt && isExpired(apiKey.expiresAt) ? 'text-red-500' : 'text-gray-400'
+                    apiKey.expiresAt && isExpired(apiKey.expiresAt)
+                      ? 'text-red-500'
+                      : 'text-gray-400'
                   ]"
                 />
               </div>
             </div>
           </div>
-          
+
           <!-- 快捷选项 -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-3">选择新的期限</label>
-            <div class="grid grid-cols-3 gap-2 mb-3">
+            <label class="mb-3 block text-sm font-semibold text-gray-700">选择新的期限</label>
+            <div class="mb-3 grid grid-cols-3 gap-2">
               <button
                 v-for="option in quickOptions"
                 :key="option.value"
                 :class="[
-                  'px-3 py-2 rounded-lg text-sm font-medium transition-all',
+                  'rounded-lg px-3 py-2 text-sm font-medium transition-all',
                   localForm.expireDuration === option.value
                     ? 'bg-blue-500 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -84,7 +83,7 @@
               </button>
               <button
                 :class="[
-                  'px-3 py-2 rounded-lg text-sm font-medium transition-all',
+                  'rounded-lg px-3 py-2 text-sm font-medium transition-all',
                   localForm.expireDuration === 'custom'
                     ? 'bg-blue-500 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -96,33 +95,28 @@
               </button>
             </div>
           </div>
-          
+
           <!-- 自定义日期选择 -->
-          <div
-            v-if="localForm.expireDuration === 'custom'"
-            class="animate-fadeIn"
-          >
-            <label class="block text-sm font-semibold text-gray-700 mb-2">选择日期和时间</label>
-            <input 
-              v-model="localForm.customExpireDate" 
-              type="datetime-local" 
+          <div v-if="localForm.expireDuration === 'custom'" class="animate-fadeIn">
+            <label class="mb-2 block text-sm font-semibold text-gray-700">选择日期和时间</label>
+            <input
+              v-model="localForm.customExpireDate"
               class="form-input w-full"
               :min="minDateTime"
+              type="datetime-local"
               @change="updateCustomExpiryPreview"
-            >
-            <p class="text-xs text-gray-500 mt-2">
-              选择一个未来的日期和时间作为过期时间
-            </p>
+            />
+            <p class="mt-2 text-xs text-gray-500">选择一个未来的日期和时间作为过期时间</p>
           </div>
-          
+
           <!-- 预览新的过期时间 -->
-          <div 
+          <div
             v-if="localForm.expiresAt !== apiKey.expiresAt"
-            class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200"
+            class="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4"
           >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-xs text-blue-700 font-medium mb-1">
+                <p class="mb-1 text-xs font-medium text-blue-700">
                   <i class="fas fa-arrow-right mr-1" />
                   新的过期时间
                 </p>
@@ -143,33 +137,27 @@
                   </template>
                 </p>
               </div>
-              <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
+              <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-white shadow-sm">
                 <i class="fas fa-check text-lg text-green-500" />
               </div>
             </div>
           </div>
-          
+
           <!-- 操作按钮 -->
           <div class="flex gap-3 pt-2">
             <button
-              class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+              class="flex-1 rounded-lg bg-gray-100 px-4 py-2.5 font-semibold text-gray-700 transition-colors hover:bg-gray-200"
               @click="$emit('close')"
             >
               取消
             </button>
             <button
-              class="flex-1 btn btn-primary py-2.5 px-4 font-semibold"
+              class="btn btn-primary flex-1 px-4 py-2.5 font-semibold"
               :disabled="saving || localForm.expiresAt === apiKey.expiresAt"
               @click="handleSave"
             >
-              <div
-                v-if="saving"
-                class="loading-spinner mr-2"
-              />
-              <i
-                v-else
-                class="fas fa-save mr-2"
-              />
+              <div v-if="saving" class="loading-spinner mr-2" />
+              <i v-else class="fas fa-save mr-2" />
               {{ saving ? '保存中...' : '保存更改' }}
             </button>
           </div>
@@ -224,23 +212,29 @@ const minDateTime = computed(() => {
 })
 
 // 监听显示状态，初始化表单
-watch(() => props.show, (newVal) => {
-  if (newVal) {
-    initializeForm()
+watch(
+  () => props.show,
+  (newVal) => {
+    if (newVal) {
+      initializeForm()
+    }
   }
-})
+)
 
 // 监听 apiKey 变化，重新初始化
-watch(() => props.apiKey?.id, (newId) => {
-  if (newId && props.show) {
-    initializeForm()
+watch(
+  () => props.apiKey?.id,
+  (newId) => {
+    if (newId && props.show) {
+      initializeForm()
+    }
   }
-})
+)
 
 // 初始化表单
 const initializeForm = () => {
   saving.value = false
-  
+
   if (props.apiKey.expiresAt) {
     localForm.expireDuration = 'custom'
     localForm.customExpireDate = new Date(props.apiKey.expiresAt).toISOString().slice(0, 16)
@@ -255,23 +249,23 @@ const initializeForm = () => {
 // 选择快捷选项
 const selectQuickOption = (value) => {
   localForm.expireDuration = value
-  
+
   if (!value) {
     localForm.expiresAt = null
     return
   }
-  
+
   if (value === 'custom') {
     return
   }
-  
+
   const now = new Date()
   const match = value.match(/(\d+)([dhmy])/)
-  
+
   if (match) {
     const [, num, unit] = match
     const amount = parseInt(num)
-    
+
     switch (unit) {
       case 'd':
         now.setDate(now.getDate() + amount)
@@ -286,7 +280,7 @@ const selectQuickOption = (value) => {
         now.setFullYear(now.getFullYear() + amount)
         break
     }
-    
+
     localForm.expiresAt = now.toISOString()
   }
 }
@@ -320,12 +314,12 @@ const isExpired = (dateString) => {
 // 获取过期状态
 const getExpiryStatus = (expiresAt) => {
   if (!expiresAt) return null
-  
+
   const now = new Date()
   const expiryDate = new Date(expiresAt)
   const diffMs = expiryDate - now
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
-  
+
   if (diffMs < 0) {
     return {
       text: '已过期',
@@ -396,7 +390,11 @@ defineExpose({
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

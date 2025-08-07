@@ -1,8 +1,6 @@
 // API 配置
 import { APP_CONFIG, getLoginUrl } from './app'
 
-const isDev = import.meta.env.DEV
-
 // 开发环境使用 /webapi 前缀，生产环境不使用前缀
 export const API_PREFIX = APP_CONFIG.apiPrefix
 
@@ -22,11 +20,11 @@ export function getRequestConfig(token) {
       'Content-Type': 'application/json'
     }
   }
-  
+
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`
   }
-  
+
   return config
 }
 
@@ -68,7 +66,7 @@ class ApiClient {
       // 如果当前已经在登录页面，不要再次跳转
       const currentPath = window.location.pathname + window.location.hash
       const isLoginPage = currentPath.includes('/login') || currentPath.endsWith('/')
-      
+
       if (!isLoginPage) {
         localStorage.removeItem('authToken')
         // 使用统一的登录URL
@@ -81,12 +79,12 @@ class ApiClient {
     const contentType = response.headers.get('content-type')
     if (contentType && contentType.includes('application/json')) {
       const data = await response.json()
-      
+
       // 如果响应不成功，抛出错误
       if (!response.ok) {
         throw new Error(data.message || `HTTP ${response.status}`)
       }
-      
+
       return data
     }
 

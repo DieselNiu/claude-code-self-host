@@ -10,9 +10,9 @@ export const useApiKeysStore = defineStore('apiKeys', () => {
   const statsTimeRange = ref('all')
   const sortBy = ref('')
   const sortOrder = ref('asc')
-  
+
   // Actions
-  
+
   // 获取API Keys列表
   const fetchApiKeys = async () => {
     loading.value = true
@@ -31,7 +31,7 @@ export const useApiKeysStore = defineStore('apiKeys', () => {
       loading.value = false
     }
   }
-  
+
   // 创建API Key
   const createApiKey = async (data) => {
     loading.value = true
@@ -51,7 +51,7 @@ export const useApiKeysStore = defineStore('apiKeys', () => {
       loading.value = false
     }
   }
-  
+
   // 更新API Key
   const updateApiKey = async (id, data) => {
     loading.value = true
@@ -71,7 +71,7 @@ export const useApiKeysStore = defineStore('apiKeys', () => {
       loading.value = false
     }
   }
-  
+
   // 切换API Key状态
   const toggleApiKey = async (id) => {
     loading.value = true
@@ -91,7 +91,7 @@ export const useApiKeysStore = defineStore('apiKeys', () => {
       loading.value = false
     }
   }
-  
+
   // 续期API Key
   const renewApiKey = async (id, data) => {
     loading.value = true
@@ -111,7 +111,7 @@ export const useApiKeysStore = defineStore('apiKeys', () => {
       loading.value = false
     }
   }
-  
+
   // 删除API Key
   const deleteApiKey = async (id) => {
     loading.value = true
@@ -131,7 +131,7 @@ export const useApiKeysStore = defineStore('apiKeys', () => {
       loading.value = false
     }
   }
-  
+
   // 获取API Key统计
   const fetchApiKeyStats = async (id, timeRange = 'all') => {
     try {
@@ -148,7 +148,7 @@ export const useApiKeysStore = defineStore('apiKeys', () => {
       return null
     }
   }
-  
+
   // 排序API Keys
   const sortApiKeys = (field) => {
     if (sortBy.value === field) {
@@ -158,7 +158,7 @@ export const useApiKeysStore = defineStore('apiKeys', () => {
       sortOrder.value = 'asc'
     }
   }
-  
+
   // 获取已存在的标签
   const fetchTags = async () => {
     try {
@@ -173,7 +173,7 @@ export const useApiKeysStore = defineStore('apiKeys', () => {
       return []
     }
   }
-  
+
   // 重置store
   const reset = () => {
     apiKeys.value = []
@@ -183,7 +183,7 @@ export const useApiKeysStore = defineStore('apiKeys', () => {
     sortBy.value = ''
     sortOrder.value = 'asc'
   }
-  
+
   return {
     // State
     apiKeys,
@@ -192,7 +192,7 @@ export const useApiKeysStore = defineStore('apiKeys', () => {
     statsTimeRange,
     sortBy,
     sortOrder,
-    
+
     // Actions
     fetchApiKeys,
     createApiKey,
